@@ -1,0 +1,103 @@
+#!/bin/sh
+# 
+# git-xflow -- An extension to git-flow, which automatize
+# some usual tasks related to repository operations.
+#
+# Feel free to contribute to this project at:
+#    https://github.com/golflima/git-xflow
+# git-flow : http://github.com/nvie/gitflow
+#
+# Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+pull()
+{
+    case $branch in
+        release)
+            echo "Pulling release/$target"
+            git checkout release/$target
+            git pull --rebase origin release/$target ;;
+        hotfix)
+            echo "Pulling hotfix/$target"
+            git checkout hotfix/$target
+            git pull --rebase origin hotfix/$target ;;
+        *)
+            echo "Not supported operation. Using git-flow directly."
+            git flow $branch pull $target ;;
+    esac
+}
+
+publish()
+{
+    case $branch in
+        hotfix)
+            echo "Publishing hotfix/$target"
+            git checkout release/$target
+            git push origin release/$target ;;
+        *)
+            echo "Not supported operation. Using git-flow directly."
+            git flow $branch publish $target ;;
+    esac
+}
+
+close()
+{
+    case $branch in
+        feature)
+            echo "Closing feature/$target"
+            git push origin develop
+            git push origin :feature/$target ;;
+        release)
+            echo "Closing release/$target"
+            git push --tags
+            git push origin master
+            git push origin develop
+            git push origin --tags
+            git push origin :release/$target ;;
+        hotfix)
+            echo "Closing hotfix/$target"
+            git push --tags
+            git push origin master
+            git push origin develop
+            git push origin --tags
+            git push origin :hotfix/$target ;;
+        *)
+            die "Not supported operation." ;;
+    esac
+}
+
+branch=$1
+action=$2
+target=$3
+if [ -z $branch] || [ -z $action] || [ -z $target]; then
+    echo "git-xflow requires at least 3 arguments : "
+    echo "  branch : feature / release / hotfix"
+    echo "  action : pull / publish / close"
+    echo "  target : [name] / [version]"
+    die "Not supported operation."
+fi
+
+case $action in
+    pull)
+        pull ;;
+    publish)
+        publish ;;
+    close)
+        close ;;
+    *)
+        die "Not supported operation." ;;
+esac
+
+exit 0;
