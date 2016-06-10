@@ -1,0 +1,115 @@
+#!/bin/sh
+# 
+# git-xflow -- An extension to git-flow, which automatize
+# some usual tasks related to repository operations.
+#
+# Feel free to contribute to this project at:
+#    https://github.com/golflima/git-xflow
+# git-flow : http://github.com/nvie/gitflow
+#
+# Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+################ Import gitflow-commom functions ################
+export GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+. "$GITXFLOW_DIR/gitflow-common"
+gitflow_load_settings
+#################################################################
+
+pull()
+{
+    case $branch in
+        release)
+            echo "Pulling release/$target"
+            git checkout release/$target || die "Error !"
+            git pull --rebase $ORIGIN release/$target || die "Error !" ;;
+        hotfix)
+            echo "Pulling hotfix/$target"
+            git checkout hotfix/$target || die "Error !"
+            git pull --rebase $ORIGIN hotfix/$target || die "Error !" ;;
+        *)
+            warn "Not supported operation. Using git-flow directly."
+            git flow $branch pull $target || die "Error !" ;;
+    esac
+}
+
+publish()
+{
+    case $branch in
+        hotfix)
+            echo "Publishing hotfix/$target"
+            git fetch -q $ORIGIN || die "Error !"
+            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "Error !"
+            git fetch -q $ORIGIN hotfix/$target || die "Error !"
+            git checkout hotfix/$target || die "Error !" ;;
+        *)
+            warn "Not supported operation. Using git-flow directly."
+            git flow $branch publish $target || die "Error !" ;;
+    esac
+}
+
+close()
+{
+    if [ `git_branch_exists "$branch/$target"` ] ; then
+        git flow $branch finish $target || die "Can't finish $branch/$target !'"
+    fi
+    case $branch in
+        feature)
+            echo "Closing feature/$target"
+            git push $ORIGIN $DEVELOP_BRANCH || die "Error !" ;;
+        release)
+            echo "Closing release/$target"
+            git push --tags || die "Error !"
+            git push $ORIGIN $MASTER_BRANCH || die "Error !"
+            git push $ORIGIN $DEVELOP_BRANCH || die "Error !"
+            git push $ORIGIN --tags || die "Error !" ;;
+        hotfix)
+            echo "Closing hotfix/$target"
+            git push --tags || die "Error !"
+            git push $ORIGIN $MASTER_BRANCH || die "Error !"
+            git push $ORIGIN $DEVELOP_BRANCH || die "Error !"
+            git push $ORIGIN --tags || die "Error !" ;;
+        *)
+            die "Not supported operation." ;;
+    esac
+    if [ `git_local_branch_exists "$branch/$target"` ] ; then
+        git push $ORIGIN :$branch/$target || die "Error !"
+    fi
+}
+
+branch=$1
+action=$2
+target=$3
+if [ -z "$branch" -o -z "$action" -o -z "$target" ] ; then
+    echo "git-xflow requires at least 3 arguments : "
+    echo "  branch : feature / release / hotfix"
+    echo "  action : pull / publish / close"
+    echo "  target : [name] / [version]"
+    die "Not supported operation."
+fi
+
+case $action in
+    pull)
+        pull ;;
+    publish)
+        publish ;;
+    close)
+        close ;;
+    *)
+        die "Not supported operation." ;;
+esac
+
+echo "Done."
+exit 0;
