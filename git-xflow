@@ -196,7 +196,7 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-nogf=$( [ "$1" = "--nogf" ] ); $nogf && shift
+[ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
 
 subcommand="$1"
 action="$2"
@@ -206,10 +206,10 @@ name="$3"
 [ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
 [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} "$name" $*
 
-if $nogf; then
+if [ "$disable_gitflow_proxy" = "yes" ] ; then
+    die "Not supported operation."
+else
     warn "Operation not supported by git-xflow, trying with vanilla git-flow ..."
     echo "git flow $*"
     git flow $*
-else
-    die "Not supported operation."
 fi
