@@ -76,23 +76,39 @@ usage() {
     esac
 }
 
-action_feature_close() {
+subcommand_help() {
+    usage $1
+    exit 0;
+}
+
+subcommand_version() {
+    echo "$GITXFLOW_VERSION"
+    exit 0;
+}
+
+action_close() {
+    [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
+    require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     if git_branch_exists $subcommand/$name; then
         echo "Finishing $subcommand/$name ..."
         git flow $subcommand finish $name || die "Can't finish $subcommand/$name !"
     fi
 
-    echo "Closing feature/$name ..."
-    git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
-
+    subcommandaction_${subcommand}_${action} "$name" $*
+    
     if git_local_branch_exists $subcommand/$name; then
         git push $ORIGIN :$subcommand/$name || die "$LINENO: Error !"
     fi
     end
 }
 
-action_staging_merge() {
+subcommandaction_feature_close() {
+    echo "Closing feature/$name ..."
+    git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
+}
+
+subcommandaction_staging_merge() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
@@ -115,7 +131,7 @@ action_staging_merge() {
     end
 }
 
-action_staging_reset() {
+subcommandaction_staging_reset() {
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     if [ -z "$name" ] ; then
@@ -131,7 +147,7 @@ action_staging_reset() {
     end
 }
 
-action_release_pull() {
+subcommandaction_release_pull() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     echo "Pulling release/$name ..."
     git checkout release/$name || die "$LINENO: Error !"
@@ -139,26 +155,15 @@ action_release_pull() {
     end
 }
 
-action_release_close() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
-    if git_branch_exists $subcommand/$name; then
-        echo "Finishing $subcommand/$name ..."
-        git flow $subcommand finish $name || die "Can't finish $subcommand/$name !"
-    fi
-
+subcommandaction_release_close() {
     echo "Closing release/$name ..."
     git push --tags || die "$LINENO: Error !"
     git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
     git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
     git push $ORIGIN --tags || die "$LINENO: Error !"
-
-    if git_local_branch_exists $subcommand/$name; then
-        git push $ORIGIN :$subcommand/$name || die "$LINENO: Error !"
-    fi
-    end
 }
 
-action_hotfix_publish() {
+subcommandaction_hotfix_publish() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     echo "Publishing hotfix/$name to $ORIGIN ..."
     git fetch -q $ORIGIN || die "$LINENO: Error !"
@@ -168,7 +173,7 @@ action_hotfix_publish() {
     end
 }
 
-action_hotfix_pull() {
+subcommandaction_hotfix_pull() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     echo "Pulling hotfix/$name ..."
     git checkout hotfix/$name || die "$LINENO: Error !"
@@ -176,33 +181,12 @@ action_hotfix_pull() {
     end
 }
 
-action_hotfix_close() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
-    if git_branch_exists $subcommand/$name; then
-        echo "Finishing $subcommand/$name ..."
-        git flow $subcommand finish $name || die "Can't finish $subcommand/$name !"
-    fi
-
+subcommandaction_hotfix_close() {
     echo "Closing hotfix/$name ..."
     git push --tags || die "$LINENO: Error !"
     git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
     git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
     git push $ORIGIN --tags || die "$LINENO: Error !"
-
-    if git_local_branch_exists $subcommand/$name; then
-        git push $ORIGIN :$subcommand/$name || die "$LINENO: Error !"
-    fi
-    end
-}
-
-action_help() {
-    usage $1
-    exit 0;
-}
-
-action_version() {
-    echo "$GITXFLOW_VERSION"
-    exit 0;
 }
 
 
@@ -212,14 +196,20 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+[ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
+
 subcommand="$1"
 action="$2"
 name="$3"
 
-if [ "$(type -t action_${subcommand}_${action})" = "function" ] ; then
-    action_${subcommand}_${action} $name $*
-elif [ "$(type -t action_${subcommand})" = "function" ] ; then
-    action_${subcommand} $action $*
-fi
+[ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} "$action" "$name" $*
+[ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
+[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} "$name" $*
 
-die "Not supported operation."
+if [ "$disable_gitflow_proxy" = "yes" ] ; then
+    die "Not supported operation."
+else
+    warn "Operation not supported by git-xflow, trying with vanilla git-flow ..."
+    echo "git flow $*"
+    git flow $*
+fi
