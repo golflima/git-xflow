@@ -26,6 +26,7 @@ Of course, a knowledge of `git` is also required:
 * `git xflow hotfix publish/pull` to publish and pull a hotfix
 * and many more !
 
+To get help, just type in a terminal : `git xflow`
 
 
 Install git-xflow
@@ -37,6 +38,7 @@ Install git-xflow
 4. For Linux only, make files executables with:
    * `chmod +x git-xflow`
    * `chmod +x gitflow-common`
+5. Test it, type in a terminal : `git xflow`
 
 
 
