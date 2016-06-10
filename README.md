@@ -45,7 +45,7 @@ Install git-xflow
 Licence terms
 -------------
 
-`git-xflow` is GNU Lesser General Public License v3 (GNU LGPL v3), see the [LICENSE](LICENSE) file.
+`git-xflow` is published under the terms of [GNU Lesser General Public License v3](http://www.gnu.org/licenses/lgpl-3.0.html), see the [LICENSE](LICENSE) file.
 
-Although the BSD License does not require you to share any modifications you make to the source code,
+Although the GNU LGPLv3 does not require you to share any modifications you make to the source code,
 you are very much encouraged and invited to contribute back your modifications to the community, preferably in a Github fork, of course.
