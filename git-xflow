@@ -22,71 +22,121 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-################ Import gitflow-commom functions ################
+################ Import gitflow-common functions ################
 export GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 . "$GITXFLOW_DIR/gitflow-common"
 gitflow_load_settings
+require_gitflow_initialized
 #################################################################
 
-pull()
+action_pull()
 {
     case $branch in
         release)
-            echo "Pulling release/$target"
-            git checkout release/$target || die "Error !"
-            git pull --rebase $ORIGIN release/$target || die "Error !" ;;
+            echo "Pulling release/$target ..."
+            git checkout release/$target || die "$LINENO: Error !"
+            git pull --rebase $ORIGIN release/$target || die "$LINENO: Error !" ;;
         hotfix)
-            echo "Pulling hotfix/$target"
-            git checkout hotfix/$target || die "Error !"
-            git pull --rebase $ORIGIN hotfix/$target || die "Error !" ;;
+            echo "Pulling hotfix/$target ..."
+            git checkout hotfix/$target || die "$LINENO: Error !"
+            git pull --rebase $ORIGIN hotfix/$target || die "$LINENO: Error !" ;;
         *)
             warn "Not supported operation. Using git-flow directly."
-            git flow $branch pull $target || die "Error !" ;;
+            git flow $branch pull $target || die "$LINENO: Error !" ;;
     esac
+    end
 }
 
-publish()
+action_publish()
 {
     case $branch in
         hotfix)
-            echo "Publishing hotfix/$target"
-            git fetch -q $ORIGIN || die "Error !"
-            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "Error !"
-            git fetch -q $ORIGIN hotfix/$target || die "Error !"
-            git checkout hotfix/$target || die "Error !" ;;
+            echo "Publishing hotfix/$target to $ORIGIN ..."
+            git fetch -q $ORIGIN || die "$LINENO: Error !"
+            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "$LINENO: Error !"
+            git fetch -q $ORIGIN hotfix/$target || die "$LINENO: Error !"
+            git checkout hotfix/$target || die "$LINENO: Error !" ;;
         *)
             warn "Not supported operation. Using git-flow directly."
-            git flow $branch publish $target || die "Error !" ;;
+            git flow $branch publish $target || die "$LINENO: Error !" ;;
     esac
+    end
 }
 
-close()
+action_close()
 {
-    if [ `git_branch_exists "$branch/$target"` ] ; then
-        git flow $branch finish $target || die "Can't finish $branch/$target !'"
+    if git_branch_exists $branch/$target; then
+        echo "Finishing $branch/$target ..."
+        git flow $branch finish $target || die "Can't finish $branch/$target !"
     fi
     case $branch in
         feature)
-            echo "Closing feature/$target"
-            git push $ORIGIN $DEVELOP_BRANCH || die "Error !" ;;
+            echo "Closing feature/$target ..."
+            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !" ;;
         release)
-            echo "Closing release/$target"
-            git push --tags || die "Error !"
-            git push $ORIGIN $MASTER_BRANCH || die "Error !"
-            git push $ORIGIN $DEVELOP_BRANCH || die "Error !"
-            git push $ORIGIN --tags || die "Error !" ;;
+            echo "Closing release/$target ..."
+            git push --tags || die "$LINENO: Error !"
+            git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
+            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
+            git push $ORIGIN --tags || die "$LINENO: Error !" ;;
         hotfix)
-            echo "Closing hotfix/$target"
-            git push --tags || die "Error !"
-            git push $ORIGIN $MASTER_BRANCH || die "Error !"
-            git push $ORIGIN $DEVELOP_BRANCH || die "Error !"
-            git push $ORIGIN --tags || die "Error !" ;;
+            echo "Closing hotfix/$target ..."
+            git push --tags || die "$LINENO: Error !"
+            git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
+            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
+            git push $ORIGIN --tags || die "$LINENO: Error !" ;;
         *)
             die "Not supported operation." ;;
     esac
-    if [ `git_local_branch_exists "$branch/$target"` ] ; then
-        git push $ORIGIN :$branch/$target || die "Error !"
+    if git_local_branch_exists $branch/$target; then
+        git push $ORIGIN :$branch/$target || die "$LINENO: Error !"
     fi
+    end
+}
+
+branch_staging() {
+    case $action in
+        merge)
+            previous_branch=$(git_current_branch)
+            require_clean_working_tree
+            require_local_branch feature/$target
+            echo "Merging feature/$target into staging ..."
+            if git_remote_branch_exists staging; then
+                git checkout staging || die "$LINENO: Error !"
+            else
+                if git_local_branch_exists staging; then
+                    git checkout feature/$target
+                	git branch -D staging || die "$LINENO: Error !"
+                fi
+                git checkout -b staging $DEVELOP_BRANCH || die "$LINENO: Error !"
+                git push --set-upstream $ORIGIN staging || die "$LINENO: Error !"
+            fi
+            git pull || die "$LINENO: Error !"
+            git merge feature/$target || die "$LINENO: Error !"
+            git push || die "$LINENO: Error !"
+            git checkout $previous_branch || die "$LINENO: Error !" ;;
+        reset)
+            previous_branch=$(git_current_branch)
+            require_clean_working_tree
+            if [ $target = "develop" -a ! "$(git_local_branch_exists feature/develop)" ] ; then
+                echo "Resetting staging to $DEVELOP_BRANCH ..."
+                git checkout -B staging $DEVELOP_BRANCH || die "$LINENO: Error !"
+            else
+                echo "Resetting staging to feature/$target ..."
+                require_local_branch feature/$target
+                git checkout -B staging feature/$target || die "$LINENO: Error !"
+            fi
+            git push -f --set-upstream $ORIGIN staging || die "$LINENO: Error !"
+            git checkout $previous_branch || die "$LINENO: Error !" ;;
+        *)
+            die "Not supported operation." ;;
+    esac
+    end
+}
+
+end() {
+    echo "Done."
+    exit 0;
 }
 
 branch=$1
@@ -94,22 +144,24 @@ action=$2
 target=$3
 if [ -z "$branch" -o -z "$action" -o -z "$target" ] ; then
     echo "git-xflow requires at least 3 arguments : "
-    echo "  branch : feature / release / hotfix"
-    echo "  action : pull / publish / close"
+    echo "  branch : feature / release / hotfix / staging"
+    echo "  action : pull / publish / close / merge / reset"
     echo "  target : [name] / [version]"
     die "Not supported operation."
 fi
 
+case $branch in
+    staging)
+        branch_staging ;;
+esac
+
 case $action in
     pull)
-        pull ;;
+        action_pull ;;
     publish)
-        publish ;;
+        action_publish ;;
     close)
-        close ;;
+        action_close ;;
     *)
         die "Not supported operation." ;;
 esac
-
-echo "Done."
-exit 0;
