@@ -34,7 +34,7 @@ pull()
             git checkout hotfix/$target
             git pull --rebase origin hotfix/$target ;;
         *)
-            echo "Not supported operation. Using git-flow directly."
+            warn "Not supported operation. Using git-flow directly."
             git flow $branch pull $target ;;
     esac
 }
@@ -47,7 +47,7 @@ publish()
             git checkout release/$target
             git push origin release/$target ;;
         *)
-            echo "Not supported operation. Using git-flow directly."
+            warn "Not supported operation. Using git-flow directly."
             git flow $branch publish $target ;;
     esac
 }
