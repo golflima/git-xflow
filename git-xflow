@@ -24,12 +24,12 @@
 
 GITXFLOW_VERSION="0.3.0-DEV"
 
-################ Import gitflow-common functions ################
-export GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
-. "$GITXFLOW_DIR/gitflow-common"
-gitflow_load_settings
-require_gitflow_initialized
-#################################################################
+############## Import gitflow-common functions ##############
+GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
+. "$GITXFLOW_DIR/gitflow-common"                            #
+gitflow_load_settings                                       #
+require_gitflow_initialized                                 #
+#############################################################
 
 end() {
     echo "Done."
@@ -46,34 +46,48 @@ require_argument() {
 usage() {
     case "$1" in
         feature)
-            echo "usage: git xflow feature close <name>" ;;
+            echo "usage: git xflow feature <action>"
+            echo
+            echo "Available actions are:"
+            echo "    close <name>    Finish and push feature <name> to $ORIGIN." ;;
         staging)
-            echo "usage: git xflow staging merge <name>"
-            echo "       git xflow staging reset"
-            echo "       git xflow staging reset <name>" ;;
+            echo "usage: git xflow staging <action>"
+            echo
+            echo "Available actions are:"
+            echo "    merge <name>    Merge feature <name> into staging branch."
+            echo "    reset           Reset staging branch to develop."
+            echo "    reset <name>    Reset staging branch to feature <name>." ;;
         release)
-            echo "usage: git xflow release pull <name>"
-            echo "       git xflow release close <name>" ;;
+            echo "usage: git xflow release <action>"
+            echo
+            echo "Available actions are:"
+            echo "    pull <name>     Pull release <name> from $ORIGIN."
+            echo "    close <name>    Finish and push release <name> to $ORIGIN." ;;
         hotfix)
-            echo "usage: git xflow hotfix publish <name>"
-            echo "       git xflow hotfix pull <name>"
-            echo "       git xflow hotfix close <name>" ;;
-        version)
-            echo "usage: git xflow version" ;;
+            echo "usage: git xflow hotfix <action>"
+            echo
+            echo "Available actions are:"
+            echo "    publish <name>    Publish release <name> to $ORIGIN."
+            echo "    pull <name>       Pull release <name> from $ORIGIN."
+            echo "    close <name>      Finish and push release <name> to $ORIGIN." ;;
         *)
-            echo "usage: git xflow <subcommand>"
+            echo "usage: git xflow [--nogf] <subcommand>"
             echo
             echo "Available subcommands are:"
-            echo "   feature   Manage your feature branches."
-            echo "   staging   Manage your staging branch."
-            echo "   release   Manage your release branches."
-            echo "   hotfix    Manage your hotfix branches."
-            echo "   help      Shows help information."
-            echo "   version   Shows version information."
+            echo "    feature    Manages feature branches."
+            echo "    staging    Manages staging branch."
+            echo "    release    Manages release branches."
+            echo "    hotfix     Manages hotfix branches."
+            echo "    help       Shows help information."
+            echo "    version    Shows version information."
             echo
-            echo "Try 'git xflow help <subcommand>' for details."
-            echo "More information at : https://github.com/golflima/git-xflow" ;;
+            echo "Available options are:"
+            echo "    --nogf     Disable call to git-flow when unknown subcommand is given."
+            echo
+            echo "Try 'git xflow help <subcommand>' for details." ;;
     esac
+    echo
+    echo "More information at : https://github.com/golflima/git-xflow"
 }
 
 subcommand_help() {
