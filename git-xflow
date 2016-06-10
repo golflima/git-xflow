@@ -22,146 +22,212 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-################ Import gitflow-common functions ################
-export GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
-. "$GITXFLOW_DIR/gitflow-common"
-gitflow_load_settings
-require_gitflow_initialized
-#################################################################
+GITXFLOW_VERSION="0.3.0-160611-0037"
 
-action_pull()
-{
-    case $branch in
-        release)
-            echo "Pulling release/$target ..."
-            git checkout release/$target || die "$LINENO: Error !"
-            git pull --rebase $ORIGIN release/$target || die "$LINENO: Error !" ;;
-        hotfix)
-            echo "Pulling hotfix/$target ..."
-            git checkout hotfix/$target || die "$LINENO: Error !"
-            git pull --rebase $ORIGIN hotfix/$target || die "$LINENO: Error !" ;;
-        *)
-            warn "Not supported operation. Using git-flow directly."
-            git flow $branch pull $target || die "$LINENO: Error !" ;;
-    esac
-    end
-}
-
-action_publish()
-{
-    case $branch in
-        hotfix)
-            echo "Publishing hotfix/$target to $ORIGIN ..."
-            git fetch -q $ORIGIN || die "$LINENO: Error !"
-            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "$LINENO: Error !"
-            git fetch -q $ORIGIN hotfix/$target || die "$LINENO: Error !"
-            git checkout hotfix/$target || die "$LINENO: Error !" ;;
-        *)
-            warn "Not supported operation. Using git-flow directly."
-            git flow $branch publish $target || die "$LINENO: Error !" ;;
-    esac
-    end
-}
-
-action_close()
-{
-    if git_branch_exists $branch/$target; then
-        echo "Finishing $branch/$target ..."
-        git flow $branch finish $target || die "Can't finish $branch/$target !"
-    fi
-    case $branch in
-        feature)
-            echo "Closing feature/$target ..."
-            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !" ;;
-        release)
-            echo "Closing release/$target ..."
-            git push --tags || die "$LINENO: Error !"
-            git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
-            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
-            git push $ORIGIN --tags || die "$LINENO: Error !" ;;
-        hotfix)
-            echo "Closing hotfix/$target ..."
-            git push --tags || die "$LINENO: Error !"
-            git push $ORIGIN $MASTER_BRANCH || die "$LINENO: Error !"
-            git push $ORIGIN $DEVELOP_BRANCH || die "$LINENO: Error !"
-            git push $ORIGIN --tags || die "$LINENO: Error !" ;;
-        *)
-            die "Not supported operation." ;;
-    esac
-    if git_local_branch_exists $branch/$target; then
-        git push $ORIGIN :$branch/$target || die "$LINENO: Error !"
-    fi
-    end
-}
-
-branch_staging() {
-    case $action in
-        merge)
-            previous_branch=$(git_current_branch)
-            require_clean_working_tree
-            require_local_branch feature/$target
-            echo "Merging feature/$target into staging ..."
-            if git_remote_branch_exists staging; then
-                git checkout staging || die "$LINENO: Error !"
-            else
-                if git_local_branch_exists staging; then
-                    git checkout feature/$target
-                	git branch -D staging || die "$LINENO: Error !"
-                fi
-                git checkout -b staging $DEVELOP_BRANCH || die "$LINENO: Error !"
-                git push --set-upstream $ORIGIN staging || die "$LINENO: Error !"
-            fi
-            git pull || die "$LINENO: Error !"
-            git merge feature/$target || die "$LINENO: Error !"
-            git push || die "$LINENO: Error !"
-            git checkout $previous_branch || die "$LINENO: Error !" ;;
-        reset)
-            previous_branch=$(git_current_branch)
-            require_clean_working_tree
-            if [ $target = "develop" -a ! "$(git_local_branch_exists feature/develop)" ] ; then
-                echo "Resetting staging to $DEVELOP_BRANCH ..."
-                git checkout -B staging $DEVELOP_BRANCH || die "$LINENO: Error !"
-            else
-                echo "Resetting staging to feature/$target ..."
-                require_local_branch feature/$target
-                git checkout -B staging feature/$target || die "$LINENO: Error !"
-            fi
-            git push -f --set-upstream $ORIGIN staging || die "$LINENO: Error !"
-            git checkout $previous_branch || die "$LINENO: Error !" ;;
-        *)
-            die "Not supported operation." ;;
-    esac
-    end
-}
+############## Import gitflow-common functions ##############
+GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
+. "$GITXFLOW_DIR/gitflow-common"                            #
+gitflow_load_settings                                       #
+require_gitflow_initialized                                 #
+#############################################################
 
 end() {
     echo "Done."
     exit 0;
 }
 
-branch=$1
-action=$2
-target=$3
-if [ -z "$branch" -o -z "$action" -o -z "$target" ] ; then
-    echo "git-xflow requires at least 3 arguments : "
-    echo "  branch : feature / release / hotfix / staging"
-    echo "  action : pull / publish / close / merge / reset"
-    echo "  target : [name] / [version]"
-    die "Not supported operation."
+require_argument() {
+    if [ -z "$1" ] ; then
+        usage $3;
+        die $2
+    fi
+}
+
+assertok() {
+    $1 || die "fatal: git-xflow, line $2, following command failed (err: $?): $1"
+}
+
+usage() {
+    case "$1" in
+        feature)
+            echo "usage: git xflow feature <action>"
+            echo
+            echo "Available actions are:"
+            echo "    close <name>    Finish and push feature <name> to $ORIGIN." ;;
+        staging)
+            echo "usage: git xflow staging <action>"
+            echo
+            echo "Available actions are:"
+            echo "    merge <name>    Merge feature <name> into staging branch."
+            echo "    reset           Reset staging branch to develop."
+            echo "    reset <name>    Reset staging branch to feature <name>." ;;
+        release)
+            echo "usage: git xflow release <action>"
+            echo
+            echo "Available actions are:"
+            echo "    pull <name>     Pull release <name> from $ORIGIN."
+            echo "    close <name>    Finish and push release <name> to $ORIGIN." ;;
+        hotfix)
+            echo "usage: git xflow hotfix <action>"
+            echo
+            echo "Available actions are:"
+            echo "    publish <name>    Publish release <name> to $ORIGIN."
+            echo "    pull <name>       Pull release <name> from $ORIGIN."
+            echo "    close <name>      Finish and push release <name> to $ORIGIN." ;;
+        *)
+            echo "usage: git xflow [--nogf] <subcommand>"
+            echo
+            echo "Available subcommands are:"
+            echo "    feature    Manages feature branches."
+            echo "    staging    Manages staging branch."
+            echo "    release    Manages release branches."
+            echo "    hotfix     Manages hotfix branches."
+            echo "    help       Shows help information."
+            echo "    version    Shows version information."
+            echo
+            echo "Available options are:"
+            echo "    --nogf     Disable call to git-flow when unknown subcommand is given."
+            echo
+            echo "Try 'git xflow help <subcommand>' for details." ;;
+    esac
+    echo
+    echo "More information at : https://github.com/golflima/git-xflow"
+}
+
+subcommand_help() {
+    usage $1
+    exit 0;
+}
+
+subcommand_version() {
+    echo "$GITXFLOW_VERSION"
+    exit 0;
+}
+
+action_close() {
+    [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
+    require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
+    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    if git_branch_exists $subcommand/$name; then
+        echo "Finishing $subcommand/$name ..."
+        assertok "git flow $subcommand finish $name" $LINENO
+    fi
+
+    subcommandaction_${subcommand}_${action} "$name" $*
+    
+    if git_local_branch_exists $subcommand/$name; then
+        assertok "git push $ORIGIN :$subcommand/$name" $LINENO
+    fi
+    end
+}
+
+subcommandaction_feature_close() {
+    echo "Closing feature/$name ..."
+    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
+}
+
+subcommandaction_staging_merge() {
+    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    previous_branch=$(git_current_branch)
+    require_clean_working_tree
+    require_local_branch feature/$name
+    echo "Merging feature/$name into staging ..."
+    if git_remote_branch_exists staging; then
+        assertok "git checkout staging" $LINENO
+    else
+        if git_local_branch_exists staging; then
+            assertok "git checkout feature/$name" $LINENO
+            assertok "git branch -D staging" $LINENO
+        fi
+        assertok "git checkout -b staging $DEVELOP_BRANCH" $LINENO
+        assertok "git push --set-upstream $ORIGIN staging" $LINENO
+    fi
+    assertok "git pull" $LINENO
+    assertok "git merge feature/$name" $LINENO
+    assertok "git push" $LINENO
+    assertok "git checkout $previous_branch" $LINENO
+    end
+}
+
+subcommandaction_staging_reset() {
+    previous_branch=$(git_current_branch)
+    require_clean_working_tree
+    if [ -z "$name" ] ; then
+        echo "Resetting staging to $DEVELOP_BRANCH ..."
+        assertok "git checkout -B staging $DEVELOP_BRANCH" $LINENO
+    else
+        echo "Resetting staging to feature/$name ..."
+        require_local_branch feature/$name
+        assertok "git checkout -B staging feature/$name" $LINENO
+    fi
+    assertok "git push -f --set-upstream $ORIGIN staging" $LINENO
+    assertok "git checkout $previous_branch" $LINENO
+    end
+}
+
+subcommandaction_release_pull() {
+    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    echo "Pulling release/$name ..."
+    assertok "git checkout release/$name" $LINENO
+    assertok "git pull --rebase $ORIGIN release/$name" $LINENO
+    end
+}
+
+subcommandaction_release_close() {
+    echo "Closing release/$name ..."
+    assertok "git push --tags" $LINENO
+    assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
+    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
+    assertok "git push $ORIGIN --tags" $LINENO
+}
+
+subcommandaction_hotfix_publish() {
+    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    echo "Publishing hotfix/$name to $ORIGIN ..."
+    assertok "git fetch -q $ORIGIN" $LINENO
+    assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
+    assertok "git fetch -q $ORIGIN hotfix/$name" $LINENO
+    assertok "git checkout hotfix/$name" $LINENO
+    end
+}
+
+subcommandaction_hotfix_pull() {
+    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    echo "Pulling hotfix/$name ..."
+    assertok "git checkout hotfix/$name" $LINENO
+    assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
+    end
+}
+
+subcommandaction_hotfix_close() {
+    echo "Closing hotfix/$name ..."
+    assertok "git push --tags" $LINENO
+    assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
+    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
+    assertok "git push $ORIGIN --tags" $LINENO
+}
+
+
+
+if [ $# -lt 1 ]; then
+	usage
+    exit 1
 fi
 
-case $branch in
-    staging)
-        branch_staging ;;
-esac
+[ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
 
-case $action in
-    pull)
-        action_pull ;;
-    publish)
-        action_publish ;;
-    close)
-        action_close ;;
-    *)
-        die "Not supported operation." ;;
-esac
+subcommand="$1"
+action="$2"
+name="$3"
+
+[ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} "$action" "$name" $*
+[ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
+[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} "$name" $*
+
+if [ "$disable_gitflow_proxy" = "yes" ] ; then
+    die "Not supported operation."
+else
+    warn "Operation not supported by git-xflow, trying with vanilla git-flow ..."
+    echo "git flow $*"
+    assertok "git flow $*" $LINENO
+fi
