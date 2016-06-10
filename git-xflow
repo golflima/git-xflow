@@ -22,12 +22,67 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+GITXFLOW_VERSION="0.2.0-xxx-xxx"
+
 ################ Import gitflow-common functions ################
 export GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 . "$GITXFLOW_DIR/gitflow-common"
 gitflow_load_settings
 require_gitflow_initialized
 #################################################################
+
+end() {
+    echo "Done."
+    exit 0;
+}
+
+usage() {
+    case "$1" in
+        feature)
+            echo "usage: git xflow feature close <name>" ;;
+        staging)
+            echo "usage: git xflow staging merge <name>"
+            echo "       git xflow staging reset <name>"
+            echo "       git xflow staging reset develop" ;;
+        release)
+            echo "usage: git xflow release pull <name>"
+            echo "       git xflow release close <name>" ;;
+        hotfix)
+            echo "usage: git xflow hotfix publish <name>"
+            echo "       git xflow hotfix pull <name>"
+            echo "       git xflow hotfix close <name>" ;;
+        version)
+            echo "usage: git xflow version" ;;
+        *)
+            echo "usage: git xflow <subcommand>"
+            echo
+            echo "Available subcommands are:"
+            echo "   feature   Manage your feature branches."
+            echo "   staging   Manage your staging branch."
+            echo "   release   Manage your release branches."
+            echo "   hotfix    Manage your hotfix branches."
+            echo "   version   Shows version information."
+            echo
+            echo "Try 'git xflow <subcommand> help' for details."
+            echo "More information at : https://github.com/golflima/git-xflow" ;;
+    esac
+}
+
+action_publish()
+{
+    case $branch in
+        hotfix)
+            echo "Publishing hotfix/$target to $ORIGIN ..."
+            git fetch -q $ORIGIN || die "$LINENO: Error !"
+            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "$LINENO: Error !"
+            git fetch -q $ORIGIN hotfix/$target || die "$LINENO: Error !"
+            git checkout hotfix/$target || die "$LINENO: Error !" ;;
+        *)
+            warn "Not supported operation. Using git-flow directly."
+            git flow $branch publish $target || die "$LINENO: Error !" ;;
+    esac
+    end
+}
 
 action_pull()
 {
@@ -43,22 +98,6 @@ action_pull()
         *)
             warn "Not supported operation. Using git-flow directly."
             git flow $branch pull $target || die "$LINENO: Error !" ;;
-    esac
-    end
-}
-
-action_publish()
-{
-    case $branch in
-        hotfix)
-            echo "Publishing hotfix/$target to $ORIGIN ..."
-            git fetch -q $ORIGIN || die "$LINENO: Error !"
-            git push -u $ORIGIN hotfix/$target:hotfix/$target || die "$LINENO: Error !"
-            git fetch -q $ORIGIN hotfix/$target || die "$LINENO: Error !"
-            git checkout hotfix/$target || die "$LINENO: Error !" ;;
-        *)
-            warn "Not supported operation. Using git-flow directly."
-            git flow $branch publish $target || die "$LINENO: Error !" ;;
     esac
     end
 }
@@ -92,6 +131,11 @@ action_close()
         git push $ORIGIN :$branch/$target || die "$LINENO: Error !"
     fi
     end
+}
+
+action_version() {
+    echo "$GITXFLOW_VERSION"
+    exit 0;
 }
 
 branch_staging() {
@@ -134,19 +178,14 @@ branch_staging() {
     end
 }
 
-end() {
-    echo "Done."
-    exit 0;
-}
+[ "$1" = "version" ] && action_version
 
 branch=$1
 action=$2
 target=$3
+
 if [ -z "$branch" -o -z "$action" -o -z "$target" ] ; then
-    echo "git-xflow requires at least 3 arguments : "
-    echo "  branch : feature / release / hotfix / staging"
-    echo "  action : pull / publish / close / merge / reset"
-    echo "  target : [name] / [version]"
+    usage $1
     die "Not supported operation."
 fi
 
@@ -162,6 +201,8 @@ case $action in
         action_publish ;;
     close)
         action_close ;;
+    version)
+        action_version ;;
     *)
         die "Not supported operation." ;;
 esac
