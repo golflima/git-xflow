@@ -166,7 +166,7 @@ subcommandaction_feature_close() {
 
 subcommandaction_staging_merge() {
     require_argument "name" "$subcommand"
-    previous_branch="$(git_current_branch)"
+    previous_branch=$(git_current_branch)
     require_clean_working_tree
     require_local_branch feature/$name
     echo "Merging 'feature/$name' into staging ..."
@@ -188,7 +188,7 @@ subcommandaction_staging_merge() {
 }
 
 subcommandaction_staging_reset() {
-    previous_branch="$(git_current_branch)"
+    previous_branch=$(git_current_branch)
     require_clean_working_tree
     if [ -z "$name" ] ; then
         echo "Resetting staging to '$DEVELOP_BRANCH' ..."
