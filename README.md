@@ -33,19 +33,90 @@ Install git-xflow
 -----------------
 
 1. [Install git-flow](https://github.com/nvie/gitflow/wiki/Installation)
-2. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) `git-xflow`, then unzip files ...
+2. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) git-xflow, then unzip files ...
 3. Put files into a PATH listed folded ([see details for Windows and Linux](https://en.wikipedia.org/wiki/PATH_(variable)))
 4. For Linux only, make files executables with:
    * `chmod +x git-xflow`
    * `chmod +x gitflow-common`
 5. Test it, type in a terminal : `git xflow`
 
+*NB : File `gitflow-common` is taken from [git-flow](https://raw.githubusercontent.com/nvie/gitflow/develop/gitflow-common) directly,
+you don't have to copy it if you use latest version of git-flow and have put file `git-xflow` in the same folder as git-flow files.*
+
+
+
+Command-line reference
+----------------------
+
+Usage : `git xflow [--nogf] <subcommand>`.
+
+### Feature
+
+* `git xflow feature close <name>`
+  * Finish and push feature `<name>` to origin.
+* `git xflow feature cancel <name>`
+  * Delete feature `<name>` from local and origin.
+
+### Staging
+
+* `git xflow staging merge <name>`
+  * Merge feature `<name>` into staging branch.
+* `git xflow staging reset`
+  * Reset staging branch to develop.
+* `git xflow staging reset <name>`
+  * Reset staging branch to feature `<name>`.
+* `git xflow staging pull`
+  * Pull staging from origin.
+
+### Release
+
+* `git xflow staging pull <name>`
+  * Pull release `<name>` from origin.
+* `git xflow release close <name>`
+  * Finish and push release `<name>` to origin.
+* `git xflow release cancel <name>`
+  * Delete release `<name>` from local and origin.
+
+### Hotfix
+
+* `git xflow hotfix publish <name>`
+  * Publish hotfix `<name>` to origin.
+* `git xflow hotfix pull <name>`
+  * Pull hotfix `<name>` from origin.
+* `git xflow hotfix close <name>`
+  * Finish and push hotfix `<name>` to origin.
+* `git xflow hotfix cancel <name>`
+  * Delete hotfix `<name>` from local and origin.
+
+### Master
+
+* `git xflow master pull`
+  * Pull master HEAD from origin.
+* `git xflow master pull <name>`
+  * Pull tag `<name>` from origin.
+
+### General
+
+* `git xflow help`
+  * Show help information.
+* `git xflow help <subcommand>`
+  * Show help information about `<subcommand>`.
+* `git xflow version`
+  * Show version information.
+
+### Options
+
+* `git xflow --nogf <subcommand>`
+  * `--nogf` tells to git-xflow to *not* forward `<subcommand>` to `git flow <subcommand>` if it is not handled by git-xflow.
+
 
 
 Licence terms
 -------------
 
-`git-xflow` is GNU Lesser General Public License v3 (GNU LGPL v3), see the [LICENSE](LICENSE) file.
+git-xflow is published under the terms of [GNU Lesser General Public License v3](http://www.gnu.org/licenses/lgpl-3.0.html), see the [LICENSE](LICENSE) file.
 
-Although the BSD License does not require you to share any modifications you make to the source code,
+Although the GNU LGPLv3 does not require you to share any modifications you make to the source code,
 you are very much encouraged and invited to contribute back your modifications to the community, preferably in a Github fork, of course.
+
+For a list of all contributors, please see the [AUTHORS](AUTHORS) file.
