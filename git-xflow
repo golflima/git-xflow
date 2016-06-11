@@ -53,7 +53,8 @@ usage() {
             echo "usage: git xflow feature <action>"
             echo
             echo "Available actions are:"
-            echo "    close <name>    Finish and push feature <name> to $ORIGIN." ;;
+            echo "    close <name>     Finish and push feature <name> to $ORIGIN."
+            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN." ;;
         staging)
             echo "usage: git xflow staging <action>"
             echo
@@ -65,15 +66,17 @@ usage() {
             echo "usage: git xflow release <action>"
             echo
             echo "Available actions are:"
-            echo "    pull <name>     Pull release <name> from $ORIGIN."
-            echo "    close <name>    Finish and push release <name> to $ORIGIN." ;;
+            echo "    pull <name>      Pull release <name> from $ORIGIN."
+            echo "    close <name>     Finish and push release <name> to $ORIGIN."
+            echo "    cancel <name>    Delete release <name> from local and $ORIGIN." ;;
         hotfix)
             echo "usage: git xflow hotfix <action>"
             echo
             echo "Available actions are:"
-            echo "    publish <name>    Publish release <name> to $ORIGIN."
-            echo "    pull <name>       Pull release <name> from $ORIGIN."
-            echo "    close <name>      Finish and push release <name> to $ORIGIN." ;;
+            echo "    publish <name>    Publish hotfix <name> to $ORIGIN."
+            echo "    pull <name>       Pull hotfix <name> from $ORIGIN."
+            echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
+            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN." ;;
         *)
             echo "usage: git xflow [--nogf] <subcommand>"
             echo
