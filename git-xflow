@@ -44,10 +44,12 @@ require_argument() {
 }
 
 assertok() {
-    $1 || die "fatal: git-xflow, line $2, following command failed (err: $?): $1"
+    $1 || die "fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?): $1"
 }
 
 usage() {
+    echo "git-xflow, v$GITXFLOW_VERSION"
+    echo
     case "$1" in
         feature)
             echo "usage: git xflow feature <action>"
@@ -61,7 +63,8 @@ usage() {
             echo "Available actions are:"
             echo "    merge <name>    Merge feature <name> into staging branch."
             echo "    reset           Reset staging branch to develop."
-            echo "    reset <name>    Reset staging branch to feature <name>." ;;
+            echo "    reset <name>    Reset staging branch to feature <name>."
+            echo "    pull            Pull staging from $ORIGIN." ;;
         release)
             echo "usage: git xflow release <action>"
             echo
@@ -175,6 +178,13 @@ subcommandaction_staging_reset() {
     fi
     assertok "git push -f --set-upstream $ORIGIN staging" $LINENO
     assertok "git checkout $previous_branch" $LINENO
+    end
+}
+
+subcommandaction_staging_pull() {
+    echo "Pulling 'staging' ..."
+    assertok "git checkout staging" $LINENO
+    assertok "git pull --rebase $ORIGIN staging" $LINENO
     end
 }
 
