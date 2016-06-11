@@ -109,7 +109,7 @@ action_close() {
     require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     if git_branch_exists $subcommand/$name; then
-        echo "Finishing $subcommand/$name ..."
+        echo "Finishing '$subcommand/$name' ..."
         assertok "git flow $subcommand finish $name" $LINENO
     fi
 
@@ -124,7 +124,7 @@ action_close() {
 action_cancel() {
     require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
     require_argument "$name" "Missing <name> argument !" "$subcommand"
-    echo "Cancelling branch $subcommand/$name ..."
+    echo "Cancelling branch '$subcommand/$name' ..."
     [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
     git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
     git_remote_branch_exists $subcommand/$name && assertok "git branch -D $ORIGIN/$subcommand/$name" $LINENO
@@ -132,7 +132,7 @@ action_cancel() {
 }
 
 subcommandaction_feature_close() {
-    echo "Closing feature/$name ..."
+    echo "Closing 'feature/$name' ..."
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
 }
 
@@ -141,7 +141,7 @@ subcommandaction_staging_merge() {
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     require_local_branch feature/$name
-    echo "Merging feature/$name into staging ..."
+    echo "Merging 'feature/$name' into staging ..."
     if git_remote_branch_exists staging; then
         assertok "git checkout staging" $LINENO
     else
@@ -163,10 +163,10 @@ subcommandaction_staging_reset() {
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     if [ -z "$name" ] ; then
-        echo "Resetting staging to $DEVELOP_BRANCH ..."
+        echo "Resetting staging to '$DEVELOP_BRANCH' ..."
         assertok "git checkout -B staging $DEVELOP_BRANCH" $LINENO
     else
-        echo "Resetting staging to feature/$name ..."
+        echo "Resetting staging to 'feature/$name' ..."
         require_local_branch feature/$name
         assertok "git checkout -B staging feature/$name" $LINENO
     fi
@@ -177,14 +177,14 @@ subcommandaction_staging_reset() {
 
 subcommandaction_release_pull() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
-    echo "Pulling release/$name ..."
+    echo "Pulling 'release/$name' ..."
     assertok "git checkout release/$name" $LINENO
     assertok "git pull --rebase $ORIGIN release/$name" $LINENO
     end
 }
 
 subcommandaction_release_close() {
-    echo "Closing release/$name ..."
+    echo "Closing 'release/$name' ..."
     assertok "git push --tags" $LINENO
     assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
@@ -193,7 +193,7 @@ subcommandaction_release_close() {
 
 subcommandaction_hotfix_publish() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
-    echo "Publishing hotfix/$name to $ORIGIN ..."
+    echo "Publishing 'hotfix/$name' to '$ORIGIN' ..."
     assertok "git fetch -q $ORIGIN" $LINENO
     assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
     assertok "git fetch -q $ORIGIN hotfix/$name" $LINENO
@@ -203,14 +203,14 @@ subcommandaction_hotfix_publish() {
 
 subcommandaction_hotfix_pull() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
-    echo "Pulling hotfix/$name ..."
+    echo "Pulling 'hotfix/$name' ..."
     assertok "git checkout hotfix/$name" $LINENO
     assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
     end
 }
 
 subcommandaction_hotfix_close() {
-    echo "Closing hotfix/$name ..."
+    echo "Closing 'hotfix/$name' ..."
     assertok "git push --tags" $LINENO
     assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
