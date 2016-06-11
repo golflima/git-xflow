@@ -22,7 +22,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+
+
+##### Constants #####
+
 GITXFLOW_VERSION="0.3.0-160611-0037"
+
+
 
 ############## Import gitflow-common functions ##############
 GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
@@ -30,6 +36,10 @@ GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
 gitflow_load_settings                                       #
 require_gitflow_initialized                                 #
 #############################################################
+
+
+
+##### General functions #####
 
 end() {
     echo "Done."
@@ -100,6 +110,10 @@ usage() {
     echo "More information at : https://github.com/golflima/git-xflow"
 }
 
+
+
+##### Direct '<subcommand>' handlers #####
+
 subcommand_help() {
     usage $1
     exit 0;
@@ -109,6 +123,10 @@ subcommand_version() {
     echo "$GITXFLOW_VERSION"
     exit 0;
 }
+
+
+
+##### Global '<subcommand> <action>' handlers #####
 
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
@@ -137,10 +155,18 @@ action_cancel() {
     end
 }
 
+
+
+##### 'feature <action>' handlers #####
+
 subcommandaction_feature_close() {
     echo "Closing 'feature/$name' ..."
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
 }
+
+
+
+##### 'staging <action>' handlers #####
 
 subcommandaction_staging_merge() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
@@ -188,6 +214,10 @@ subcommandaction_staging_pull() {
     end
 }
 
+
+
+##### 'release <action>' handlers #####
+
 subcommandaction_release_pull() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
     echo "Pulling 'release/$name' ..."
@@ -203,6 +233,10 @@ subcommandaction_release_close() {
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
     assertok "git push $ORIGIN --tags" $LINENO
 }
+
+
+
+##### 'hotfix <action>' handlers #####
 
 subcommandaction_hotfix_publish() {
     require_argument "$name" "Missing <name> argument !" "$subcommand"
@@ -232,11 +266,9 @@ subcommandaction_hotfix_close() {
 
 
 
-if [ $# -lt 1 ]; then
-	usage
-    exit 1
-fi
+##### Main #####
 
+[ $# -lt 1 ] && usage && exit 1
 [ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
 
 subcommand="$1"
@@ -248,7 +280,7 @@ name="$3"
 [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} "$name" $*
 
 if [ "$disable_gitflow_proxy" = "yes" ] ; then
-    die "Not supported operation."
+    die "Not supported operation. Try 'git xflow help'."
 else
     warn "Operation not supported by git-xflow, trying with vanilla git-flow ..."
     echo "git flow $*"
