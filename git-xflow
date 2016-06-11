@@ -42,19 +42,15 @@ require_gitflow_initialized                                 #
 ##### General functions #####
 
 end() {
-    echo "Done."
-    exit 0;
+    echo "Done."; exit 0;
 }
 
 require_argument() {
-    if [ -z "$1" ] ; then
-        usage $3;
-        die $2
-    fi
+    [ -z "$(eval "echo \$$1")" ] && usage $2 && echo && die "Missing <$1> argument !"
 }
 
 assertok() {
-    $1 || die "fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?): $1"
+    $1 || warn "fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"
 }
 
 usage() {
@@ -130,8 +126,8 @@ subcommand_version() {
 
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
-    require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "subcommand" "$subcommand"
+    require_argument "name" "$subcommand"
     if git_branch_exists $subcommand/$name; then
         echo "Finishing '$subcommand/$name' ..."
         assertok "git flow $subcommand finish $name" $LINENO
@@ -146,8 +142,8 @@ action_close() {
 }
 
 action_cancel() {
-    require_argument "$subcommand" "Missing <subcommand> argument !" "$subcommand"
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "subcommand" "$subcommand"
+    require_argument "name" "$subcommand"
     echo "Cancelling branch '$subcommand/$name' ..."
     [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
     git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
@@ -169,7 +165,7 @@ subcommandaction_feature_close() {
 ##### 'staging <action>' handlers #####
 
 subcommandaction_staging_merge() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "name" "$subcommand"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     require_local_branch feature/$name
@@ -219,7 +215,7 @@ subcommandaction_staging_pull() {
 ##### 'release <action>' handlers #####
 
 subcommandaction_release_pull() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "name" "$subcommand"
     echo "Pulling 'release/$name' ..."
     assertok "git checkout release/$name" $LINENO
     assertok "git pull --rebase $ORIGIN release/$name" $LINENO
@@ -239,7 +235,7 @@ subcommandaction_release_close() {
 ##### 'hotfix <action>' handlers #####
 
 subcommandaction_hotfix_publish() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "name" "$subcommand"
     echo "Publishing 'hotfix/$name' to '$ORIGIN' ..."
     assertok "git fetch -q $ORIGIN" $LINENO
     assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
@@ -249,7 +245,7 @@ subcommandaction_hotfix_publish() {
 }
 
 subcommandaction_hotfix_pull() {
-    require_argument "$name" "Missing <name> argument !" "$subcommand"
+    require_argument "name" "$subcommand"
     echo "Pulling 'hotfix/$name' ..."
     assertok "git checkout hotfix/$name" $LINENO
     assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
