@@ -50,7 +50,7 @@ require_argument() {
 }
 
 assertok() {
-    $1 || warn "fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"
+    ! $1 && warn "fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"
 }
 
 usage() {
