@@ -273,13 +273,13 @@ subcommandaction_hotfix_close() {
 
 subcommandaction_master_pull() {
     if [ -z "$name" ] ; then
-        echo "Pulling 'tags/$name' ..."
-        assertok "git checkout tags/$name" $LINENO
-        assertok "git pull --rebase $ORIGIN tags/$name" $LINENO
-    else
         echo "Pulling '$MASTER_BRANCH' to HEAD ..."
         assertok "git checkout $MASTER_BRANCH" $LINENO
         assertok "git pull --rebase $ORIGIN $MASTER_BRANCH" $LINENO
+    else
+        echo "Pulling 'tags/$name' ..."
+        assertok "git checkout tags/$name" $LINENO
+        assertok "git pull --rebase $ORIGIN tags/$name" $LINENO
     fi
     end
 }
