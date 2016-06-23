@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # 
 # git-xflow -- An extension to git-flow, which automatize
 # some usual tasks related to repository operations.
@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.4.0-160611-1455"
+GITXFLOW_VERSION="0.4.1-160623-1331"
 
 
 
