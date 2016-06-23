@@ -43,6 +43,8 @@ Install git-xflow
 *NB : File `gitflow-common` is taken from [git-flow](https://raw.githubusercontent.com/nvie/gitflow/develop/gitflow-common) directly,
 you don't have to copy it if you use latest version of git-flow and have put file `git-xflow` in the same folder as git-flow files.*
 
+*git-xflow requires Bourne Again Shell (bash).*
+
 
 
 Command-line reference
