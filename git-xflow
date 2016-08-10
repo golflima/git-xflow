@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.4.1-160623-1331"
+GITXFLOW_VERSION="0.4.2+160810.1845"
 
 
 
@@ -175,8 +175,8 @@ subcommandaction_staging_merge() {
     require_argument "name" "$subcommand"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
-    require_local_branch feature/$name
     echo "Merging 'feature/$name' into staging ..."
+    git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
     if git_remote_branch_exists staging; then
         assertok "git checkout staging" $LINENO
     else
@@ -185,7 +185,7 @@ subcommandaction_staging_merge() {
             assertok "git branch -D staging" $LINENO
         fi
         assertok "git checkout -b staging $DEVELOP_BRANCH" $LINENO
-        assertok "git push --set-upstream $ORIGIN staging" $LINENO
+        assertok "git branch --set-upstream-to=$ORIGIN/staging" $LINENO
     fi
     assertok "git pull" $LINENO
     assertok "git merge feature/$name" $LINENO
