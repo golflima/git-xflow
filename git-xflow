@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.4.2+160810.1845"
+GITXFLOW_VERSION="0.4.3+160823.1617"
 
 
 
@@ -202,7 +202,8 @@ subcommandaction_staging_reset() {
         assertok "git checkout -B staging $DEVELOP_BRANCH" $LINENO
     else
         echo "Resetting staging to 'feature/$name' ..."
-        require_local_branch feature/$name
+        git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
+        assertok "git pull" $LINENO
         assertok "git checkout -B staging feature/$name" $LINENO
     fi
     assertok "git push -f --set-upstream $ORIGIN staging" $LINENO
