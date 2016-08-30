@@ -165,6 +165,10 @@ action_log() {
     git log --all --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
 }
 
+action_merged() {
+    git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging
+}
+
 
 
 ##### 'feature <action>' handlers #####
