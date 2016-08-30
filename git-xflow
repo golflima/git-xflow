@@ -28,6 +28,25 @@
 
 GITXFLOW_VERSION="0.5.0+160830.1623"
 
+# Colors
+NO_COLOR='\033[0m'
+BLACK='\033[0;30m'
+DARK_GRAY='\033[1;30m'
+RED='\033[0;31m'
+LIGHT_RED='\033[1;31m'
+GREEN='\033[0;32m'
+LIGHT_GREEN='\033[1;32m'
+ORANGE='\033[0;33m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+LIGHT_BLUE='\033[1;34m'
+PURPLE='\033[0;35m'
+LIGHT_PURPLE='\033[1;35m'
+CYAN='\033[0;36m'
+LIGHT_CYAN='\033[1;36m'
+LIGHT_GRAY='\033[0;37m'
+WHITE='\033[1;37m'
+
 
 
 ############## Import gitflow-common functions ##############
@@ -115,6 +134,13 @@ usage() {
 
 
 
+##### Git helpfull functions #####
+
+
+
+
+
+
 ##### Direct '<subcommand>' handlers #####
 
 subcommand_help() {
@@ -163,11 +189,9 @@ action_log() {
     require_argument "name" "$name"
     echo "Getting logs for branch '$subcommand/$name' ... Press [Enter] to display more logs, and"
     git log --all --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
+    end
 }
 
-action_merged() {
-    git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging
-}
 
 
 
@@ -202,6 +226,16 @@ subcommandaction_staging_merge() {
     assertok "git merge feature/$name" $LINENO
     assertok "git push" $LINENO
     assertok "git checkout $previous_branch" $LINENO
+    end
+}
+
+subcommandaction_staging_merged() {
+    #assertok "git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging"
+    for branch in `git branch -r | grep -v HEAD`; do 
+        commit=`git show --format="%H" $branch | head -n 1`
+        contained=`git branch -r --contains $commit | grep staging`
+        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Y" || echo -e "${RED}N"`\\t$commit\\t$branch${NO_COLOR}
+    done | sort -r
     end
 }
 
