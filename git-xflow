@@ -145,13 +145,6 @@ usage() {
 
 
 
-##### Git helpfull functions #####
-
-
-
-
-
-
 ##### Direct '<subcommand>' handlers #####
 
 subcommand_help() {
@@ -209,7 +202,6 @@ action_merged() {
     echo "Checking branches merged into $branchname ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
-    #assertok "git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging"
     for branch in `git branch -r | grep -v HEAD`; do 
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
