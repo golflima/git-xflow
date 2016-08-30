@@ -158,6 +158,13 @@ action_cancel() {
     end
 }
 
+action_log() {
+    require_argument "subcommand" "$subcommand"
+    require_argument "name" "$name"
+    echo "Getting logs for branch '$subcommand/$name' ... Press [Enter] to display more logs, and"
+    git log --all --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
+}
+
 
 
 ##### 'feature <action>' handlers #####
