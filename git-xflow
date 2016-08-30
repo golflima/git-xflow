@@ -190,22 +190,22 @@ action_cancel() {
 
 action_log() {
     require_argument "subcommand" "$subcommand"
-    require_argument "name" "$name"
-    echo "Getting logs for branch '$subcommand/$name' ... Press [Enter] to display more logs, and"
-    git log --all --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
+    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
+    echo "Getting logs for branch '$branchname' ... Press [Enter] to display more logs, and"
+    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
     end
 }
 
 action_merged() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    echo "Checking branches merged into $branchname ..."
+    echo "Checking branches merged into '$branchname' ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
-        contained=`git branch -r --contains $1 | grep $branchname`
+        contained=`git branch -r --contains $1 | grep ${branchname}`
         echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
     done | sort -r
     echo
