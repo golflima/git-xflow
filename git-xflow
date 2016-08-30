@@ -160,8 +160,8 @@ subcommand_help() {
 
 subcommand_version() {
     echo "$GITXFLOW_VERSION"
-    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "GITXFLOW_VERSION=" | awk -F'"' '{print $2}'`
-    [ "$GITXFLOW_VERSION" != "$official_version" ] && echo -e "${RED}New version of git-xflow ($official_version) is available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}"
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    [ "$GITXFLOW_VERSION" != "$official_version" ] && echo -e "${RED}New version of git-xflow ($official_version) available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}"
     exit 0;
 }
 
