@@ -26,7 +26,26 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.4.3+160823.1617"
+GITXFLOW_VERSION="0.5.0+160831.0007"
+
+# Colors
+NO_COLOR='\033[0m'
+BLACK='\033[0;30m'
+DARK_GRAY='\033[1;30m'
+RED='\033[0;31m'
+LIGHT_RED='\033[1;31m'
+GREEN='\033[0;32m'
+LIGHT_GREEN='\033[1;32m'
+ORANGE='\033[0;33m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+LIGHT_BLUE='\033[1;34m'
+PURPLE='\033[0;35m'
+LIGHT_PURPLE='\033[1;35m'
+CYAN='\033[0;36m'
+LIGHT_CYAN='\033[1;36m'
+LIGHT_GRAY='\033[0;37m'
+WHITE='\033[1;37m'
 
 
 
@@ -58,49 +77,66 @@ usage() {
     echo
     case "$1" in
         feature)
-            echo "usage: git xflow feature <action>"
+            echo "Usage: git xflow feature <action>"
             echo
             echo "Available actions are:"
+            echo "    merged <name>    Check branches merged into feature <name> on $ORIGIN."
             echo "    close <name>     Finish and push feature <name> to $ORIGIN."
-            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN."
+            echo "    log <name>       Display commits history of feature <name> from $ORIGIN." ;;
         staging)
-            echo "usage: git xflow staging <action>"
+            echo "Usage: git xflow staging <action>"
             echo
             echo "Available actions are:"
             echo "    merge <name>    Merge feature <name> into staging branch."
+            echo "    merged          Check branches merged into staging on $ORIGIN."
             echo "    reset           Reset staging branch to develop."
             echo "    reset <name>    Reset staging branch to feature <name>."
-            echo "    pull            Pull staging from $ORIGIN." ;;
-        release)
-            echo "usage: git xflow release <action>"
+            echo "    pull            Pull staging from $ORIGIN."
+            echo "    log             Display commits history of staging from $ORIGIN." ;;
+        develop)
+            echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
+            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
+            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN." ;;
+        release)
+            echo "Usage: git xflow release <action>"
+            echo
+            echo "Available actions are:"
+            echo "    merged <name>    Check branches merged into release <name> on $ORIGIN."
             echo "    pull <name>      Pull release <name> from $ORIGIN."
             echo "    close <name>     Finish and push release <name> to $ORIGIN."
-            echo "    cancel <name>    Delete release <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>    Delete release <name> from local and $ORIGIN."
+            echo "    log <name>       Display commits history of release <name> from $ORIGIN." ;;
         hotfix)
-            echo "usage: git xflow hotfix <action>"
+            echo "Usage: git xflow hotfix <action>"
             echo
             echo "Available actions are:"
+            echo "    merged <name>     Check branches merged into hotfix <name> on $ORIGIN."
             echo "    publish <name>    Publish hotfix <name> to $ORIGIN."
             echo "    pull <name>       Pull hotfix <name> from $ORIGIN."
             echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
-            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN."
+            echo "    log <name>        Display commits history of hotfix <name> from $ORIGIN." ;;
         master)
-            echo "usage: git xflow master <action>"
+            echo "Usage: git xflow master <action>"
             echo
             echo "Available actions are:"
+            echo "    merged         Check branches merged into $MASTER_BRANCH on $ORIGIN."
             echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
-            echo "    pull <name>    Pull tag <name> from $ORIGIN." ;;
+            echo "    pull <name>    Pull tag <name> from $ORIGIN."
+            echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
         *)
-            echo "usage: git xflow [--nogf] <subcommand>"
+            echo "Usage: git xflow [--nogf] <subcommand>"
             echo
             echo "Available subcommands are:"
             echo "    feature    Manage feature branches."
             echo "    staging    Manage staging branch."
+            echo "    develop    Manage $DEVELOP_BRANCH branch."
             echo "    release    Manage release branches."
             echo "    hotfix     Manage hotfix branches."
-            echo "    master     Manage master branch."
+            echo "    master     Manage $MASTER_BRANCH branch."
             echo "    help       Show help information."
             echo "    version    Show version information."
             echo
@@ -134,7 +170,7 @@ subcommand_version() {
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
     require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     if git_branch_exists $subcommand/$name; then
         echo "Finishing '$subcommand/$name' ..."
         assertok "git flow $subcommand finish $name" $LINENO
@@ -150,11 +186,35 @@ action_close() {
 
 action_cancel() {
     require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Cancelling branch '$subcommand/$name' ..."
     [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
     git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
     git_remote_branch_exists $subcommand/$name && assertok "git branch -D $ORIGIN/$subcommand/$name" $LINENO
+    end
+}
+
+action_log() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
+    echo "Getting logs for branch '$branchname' ... Press [Enter] to display more logs, and"
+    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
+    end
+}
+
+action_merged() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
+    echo "Checking branches merged into '$branchname' ..."
+    echo 
+    echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
+    for branch in `git branch -r | grep -v HEAD`; do 
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
+        set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
+        contained=`git branch -r --contains $1 | grep ${branchname}`
+        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
+    done | sort -r
+    echo
     end
 }
 
@@ -172,7 +232,7 @@ subcommandaction_feature_close() {
 ##### 'staging <action>' handlers #####
 
 subcommandaction_staging_merge() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     echo "Merging 'feature/$name' into staging ..."
@@ -223,7 +283,7 @@ subcommandaction_staging_pull() {
 ##### 'release <action>' handlers #####
 
 subcommandaction_release_pull() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Pulling 'release/$name' ..."
     assertok "git checkout release/$name" $LINENO
     assertok "git pull --rebase $ORIGIN release/$name" $LINENO
@@ -243,7 +303,7 @@ subcommandaction_release_close() {
 ##### 'hotfix <action>' handlers #####
 
 subcommandaction_hotfix_publish() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Publishing 'hotfix/$name' to '$ORIGIN' ..."
     assertok "git fetch -q $ORIGIN" $LINENO
     assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
@@ -253,7 +313,7 @@ subcommandaction_hotfix_publish() {
 }
 
 subcommandaction_hotfix_pull() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Pulling 'hotfix/$name' ..."
     assertok "git checkout hotfix/$name" $LINENO
     assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO

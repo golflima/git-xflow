@@ -54,33 +54,54 @@ Usage : `git xflow [--nogf] <subcommand>`.
 
 ### Feature
 
+* `git xflow feature merged <name>`
+  * Check branches merged into feature `<name>` on origin.
 * `git xflow feature close <name>`
   * Finish and push feature `<name>` to origin.
 * `git xflow feature cancel <name>`
   * Delete feature `<name>` from local and origin.
+* `git xflow feature log <name>`
+  * Display commits history of feature `<name>` from origin.
 
 ### Staging
 
 * `git xflow staging merge <name>`
   * Merge feature `<name>` into staging branch.
+* `git xflow staging merged`
+  * Check branches merged into staging on origin.
 * `git xflow staging reset`
   * Reset staging branch to develop.
 * `git xflow staging reset <name>`
   * Reset staging branch to feature `<name>`.
 * `git xflow staging pull`
   * Pull staging from origin.
+* `git xflow staging log`
+  * Display commits history of staging from origin.
+
+### Develop
+
+* `git xflow develop merged`
+  * Check branches merged into develop on origin.
+* `git xflow develop log`
+  * Display commits history of develop from origin.
 
 ### Release
 
-* `git xflow staging pull <name>`
+* `git xflow release merged <name>`
+  * Check branches merged into release `<name>` on origin.
+* `git xflow release pull <name>`
   * Pull release `<name>` from origin.
 * `git xflow release close <name>`
   * Finish and push release `<name>` to origin.
 * `git xflow release cancel <name>`
   * Delete release `<name>` from local and origin.
+* `git xflow release log <name>`
+  * Display commits history of release `<name>` from origin.
 
 ### Hotfix
 
+* `git xflow hotfix merged <name>`
+  * Check branches merged into hotfix `<name>` on origin.
 * `git xflow hotfix publish <name>`
   * Publish hotfix `<name>` to origin.
 * `git xflow hotfix pull <name>`
@@ -89,13 +110,19 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Finish and push hotfix `<name>` to origin.
 * `git xflow hotfix cancel <name>`
   * Delete hotfix `<name>` from local and origin.
+* `git xflow hotfix log <name>`
+  * Display commits history of hotfix `<name>` from origin.
 
 ### Master
 
+* `git xflow master merged`
+  * Check branches merged into master on origin.
 * `git xflow master pull`
   * Pull master HEAD from origin.
 * `git xflow master pull <name>`
   * Pull tag `<name>` from origin.
+* `git xflow master log`
+  * Display commits history of master from origin.
 
 ### General
 
