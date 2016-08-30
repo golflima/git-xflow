@@ -60,6 +60,8 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Finish and push feature `<name>` to origin.
 * `git xflow feature cancel <name>`
   * Delete feature `<name>` from local and origin.
+* `git xflow feature log <name>`
+  * Display commits history of feature `<name>` from origin.
 
 ### Staging
 
@@ -73,11 +75,15 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Reset staging branch to feature `<name>`.
 * `git xflow staging pull`
   * Pull staging from origin.
+* `git xflow staging log`
+  * Display commits history of staging from origin.
 
 ### Develop
 
 * `git xflow develop merged`
   * Check branches merged into develop on origin.
+* `git xflow develop log`
+  * Display commits history of develop from origin.
 
 ### Release
 
@@ -89,6 +95,8 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Finish and push release `<name>` to origin.
 * `git xflow release cancel <name>`
   * Delete release `<name>` from local and origin.
+* `git xflow release log <name>`
+  * Display commits history of release `<name>` from origin.
 
 ### Hotfix
 
@@ -102,6 +110,8 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Finish and push hotfix `<name>` to origin.
 * `git xflow hotfix cancel <name>`
   * Delete hotfix `<name>` from local and origin.
+* `git xflow hotfix log <name>`
+  * Display commits history of hotfix `<name>` from origin.
 
 ### Master
 
@@ -111,6 +121,8 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Pull master HEAD from origin.
 * `git xflow master pull <name>`
   * Pull tag `<name>` from origin.
+* `git xflow master log`
+  * Display commits history of master from origin.
 
 ### General
 
