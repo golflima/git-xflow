@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.4.3+160823.1617"
+GITXFLOW_VERSION="0.5.0+160830.1623"
 
 
 
@@ -134,7 +134,7 @@ subcommand_version() {
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
     require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     if git_branch_exists $subcommand/$name; then
         echo "Finishing '$subcommand/$name' ..."
         assertok "git flow $subcommand finish $name" $LINENO
@@ -150,7 +150,7 @@ action_close() {
 
 action_cancel() {
     require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Cancelling branch '$subcommand/$name' ..."
     [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
     git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
@@ -172,7 +172,7 @@ subcommandaction_feature_close() {
 ##### 'staging <action>' handlers #####
 
 subcommandaction_staging_merge() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     echo "Merging 'feature/$name' into staging ..."
@@ -223,7 +223,7 @@ subcommandaction_staging_pull() {
 ##### 'release <action>' handlers #####
 
 subcommandaction_release_pull() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Pulling 'release/$name' ..."
     assertok "git checkout release/$name" $LINENO
     assertok "git pull --rebase $ORIGIN release/$name" $LINENO
@@ -243,7 +243,7 @@ subcommandaction_release_close() {
 ##### 'hotfix <action>' handlers #####
 
 subcommandaction_hotfix_publish() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Publishing 'hotfix/$name' to '$ORIGIN' ..."
     assertok "git fetch -q $ORIGIN" $LINENO
     assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
@@ -253,7 +253,7 @@ subcommandaction_hotfix_publish() {
 }
 
 subcommandaction_hotfix_pull() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "$name"
     echo "Pulling 'hotfix/$name' ..."
     assertok "git checkout hotfix/$name" $LINENO
     assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
