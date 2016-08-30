@@ -192,6 +192,22 @@ action_log() {
     end
 }
 
+action_merged() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
+    echo "Checking branches merged into $branchname ..."
+    echo 
+    echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
+    #assertok "git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging"
+    for branch in `git branch -r | grep -v HEAD`; do 
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
+        set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
+        contained=`git branch -r --contains $1 | grep $branchname`
+        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Y" || echo -e "${RED}N"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
+    done | sort -r
+    echo
+    end
+}
 
 
 
@@ -226,16 +242,6 @@ subcommandaction_staging_merge() {
     assertok "git merge feature/$name" $LINENO
     assertok "git push" $LINENO
     assertok "git checkout $previous_branch" $LINENO
-    end
-}
-
-subcommandaction_staging_merged() {
-    #assertok "git branch -r | grep feature | xargs -t -n 1 git branch -r --contains | grep staging"
-    for branch in `git branch -r | grep -v HEAD`; do 
-        commit=`git show --format="%H" $branch | head -n 1`
-        contained=`git branch -r --contains $commit | grep staging`
-        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Y" || echo -e "${RED}N"`\\t$commit\\t$branch${NO_COLOR}
-    done | sort -r
     end
 }
 
