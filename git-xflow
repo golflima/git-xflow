@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.5.0+160830.1623"
+GITXFLOW_VERSION="0.5.0+160831.0007"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -82,7 +82,8 @@ usage() {
             echo "Available actions are:"
             echo "    merged <name>    Check branches merged into feature <name> on $ORIGIN."
             echo "    close <name>     Finish and push feature <name> to $ORIGIN."
-            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN."
+            echo "    log <name>       Display commits history of feature <name> from $ORIGIN." ;;
         staging)
             echo "Usage: git xflow staging <action>"
             echo
@@ -91,12 +92,14 @@ usage() {
             echo "    merged          Check branches merged into staging on $ORIGIN."
             echo "    reset           Reset staging branch to develop."
             echo "    reset <name>    Reset staging branch to feature <name>."
-            echo "    pull            Pull staging from $ORIGIN." ;;
+            echo "    pull            Pull staging from $ORIGIN."
+            echo "    log             Display commits history of staging from $ORIGIN." ;;
         develop)
             echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
-            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN." ;;
+            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
+            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN." ;;
         release)
             echo "Usage: git xflow release <action>"
             echo
@@ -104,7 +107,8 @@ usage() {
             echo "    merged <name>    Check branches merged into release <name> on $ORIGIN."
             echo "    pull <name>      Pull release <name> from $ORIGIN."
             echo "    close <name>     Finish and push release <name> to $ORIGIN."
-            echo "    cancel <name>    Delete release <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>    Delete release <name> from local and $ORIGIN."
+            echo "    log <name>       Display commits history of release <name> from $ORIGIN." ;;
         hotfix)
             echo "Usage: git xflow hotfix <action>"
             echo
@@ -113,14 +117,16 @@ usage() {
             echo "    publish <name>    Publish hotfix <name> to $ORIGIN."
             echo "    pull <name>       Pull hotfix <name> from $ORIGIN."
             echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
-            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN." ;;
+            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN."
+            echo "    log <name>        Display commits history of hotfix <name> from $ORIGIN." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo
             echo "Available actions are:"
             echo "    merged         Check branches merged into $MASTER_BRANCH on $ORIGIN."
             echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
-            echo "    pull <name>    Pull tag <name> from $ORIGIN." ;;
+            echo "    pull <name>    Pull tag <name> from $ORIGIN."
+            echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
         *)
             echo "Usage: git xflow [--nogf] <subcommand>"
             echo
@@ -192,7 +198,7 @@ action_log() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
     echo "Getting logs for branch '$branchname' ... Press [Enter] to display more logs, and"
-    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(yellow) [%an]"
+    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
     end
 }
 
