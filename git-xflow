@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.5.1+160831.0115"
+GITXFLOW_VERSION="0.5.1+160831.0128"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -159,9 +159,12 @@ subcommand_help() {
 }
 
 subcommand_version() {
-    echo "$GITXFLOW_VERSION"
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    [ "$GITXFLOW_VERSION" != "$official_version" ] && echo -e "${RED}New version of git-xflow ($official_version) available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}"
+    if [ "$GITXFLOW_VERSION" = "$official_version" ] ; then
+        echo -e "${GREEN}${GITXFLOW_VERSION}${NO_COLOR}"
+    else
+        echo -e "${RED}${GITXFLOW_VERSION}\nNew version of git-xflow ($official_version) available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}" 
+    fi
     exit 0;
 }
 
