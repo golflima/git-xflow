@@ -77,49 +77,60 @@ usage() {
     echo
     case "$1" in
         feature)
-            echo "usage: git xflow feature <action>"
+            echo "Usage: git xflow feature <action>"
             echo
             echo "Available actions are:"
+            echo "    merged <name>    Check branches merged into feature <name> on $ORIGIN."
             echo "    close <name>     Finish and push feature <name> to $ORIGIN."
             echo "    cancel <name>    Delete feature <name> from local and $ORIGIN." ;;
         staging)
-            echo "usage: git xflow staging <action>"
+            echo "Usage: git xflow staging <action>"
             echo
             echo "Available actions are:"
             echo "    merge <name>    Merge feature <name> into staging branch."
+            echo "    merged          Check branches merged into staging on $ORIGIN."
             echo "    reset           Reset staging branch to develop."
             echo "    reset <name>    Reset staging branch to feature <name>."
             echo "    pull            Pull staging from $ORIGIN." ;;
-        release)
-            echo "usage: git xflow release <action>"
+        develop)
+            echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
+            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN." ;;
+        release)
+            echo "Usage: git xflow release <action>"
+            echo
+            echo "Available actions are:"
+            echo "    merged <name>    Check branches merged into release <name> on $ORIGIN."
             echo "    pull <name>      Pull release <name> from $ORIGIN."
             echo "    close <name>     Finish and push release <name> to $ORIGIN."
             echo "    cancel <name>    Delete release <name> from local and $ORIGIN." ;;
         hotfix)
-            echo "usage: git xflow hotfix <action>"
+            echo "Usage: git xflow hotfix <action>"
             echo
             echo "Available actions are:"
+            echo "    merged <name>     Check branches merged into hotfix <name> on $ORIGIN."
             echo "    publish <name>    Publish hotfix <name> to $ORIGIN."
             echo "    pull <name>       Pull hotfix <name> from $ORIGIN."
             echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
             echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN." ;;
         master)
-            echo "usage: git xflow master <action>"
+            echo "Usage: git xflow master <action>"
             echo
             echo "Available actions are:"
+            echo "    merged         Check branches merged into $MASTER_BRANCH on $ORIGIN."
             echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
             echo "    pull <name>    Pull tag <name> from $ORIGIN." ;;
         *)
-            echo "usage: git xflow [--nogf] <subcommand>"
+            echo "Usage: git xflow [--nogf] <subcommand>"
             echo
             echo "Available subcommands are:"
             echo "    feature    Manage feature branches."
             echo "    staging    Manage staging branch."
+            echo "    develop    Manage $DEVELOP_BRANCH branch."
             echo "    release    Manage release branches."
             echo "    hotfix     Manage hotfix branches."
-            echo "    master     Manage master branch."
+            echo "    master     Manage $MASTER_BRANCH branch."
             echo "    help       Show help information."
             echo "    version    Show version information."
             echo
@@ -203,7 +214,7 @@ action_merged() {
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
         contained=`git branch -r --contains $1 | grep $branchname`
-        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Y" || echo -e "${RED}N"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
+        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
     done | sort -r
     echo
     end
