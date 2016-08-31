@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.5.1+160831.0128"
+GITXFLOW_VERSION="0.6.0+160831.1200"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -127,6 +127,13 @@ usage() {
             echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
             echo "    pull <name>    Pull tag <name> from $ORIGIN."
             echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
+        version)
+            echo "Usage: git xflow version <action>"
+            echo
+            echo "Available actions are:"
+            echo "    show           Show version of git-xflow."
+            echo "    check          Check for updates of git-xflow."
+            echo "    update         Update git-xflow to latest available version." ;;
         *)
             echo "Usage: git xflow [--nogf] <subcommand>"
             echo
@@ -348,6 +355,30 @@ subcommandaction_master_pull() {
         assertok "git pull --rebase $ORIGIN tags/$name" $LINENO
     fi
     end
+}
+
+
+
+##### 'version <action>' handlers #####
+
+subcommand_version_show() {
+    echo "$GITXFLOW_VERSION"
+    exit 0;
+}
+
+subcommand_version_check() {
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    if [ "$GITXFLOW_VERSION" = "$official_version" ] ; then
+        echo -e "${GREEN}${GITXFLOW_VERSION}${NO_COLOR}"
+    else
+        echo -e "${RED}${GITXFLOW_VERSION}\nNew version of git-xflow ($official_version) available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}" 
+    fi
+    exit 0;
+}
+
+subcommand_version_update() {
+    wget -P "$GITXFLOW_DIR" https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow
+    exit 0;
 }
 
 
