@@ -60,14 +60,22 @@ require_gitflow_initialized                                 #
 
 ##### General functions #####
 
-# Overrides warn() and die() of gitflow-common to add some colors
+# Displays $1 in orange (overrided from gitflow-common)
 warn() { echo -e "${ORANGE}$@${NO_COLOR}" >&2; }
+
+# Ends the execution, and displays $1 in bold red (overrided from gitflow-common)
 die() { warn "${LIGHT_RED}$@"; exit 1; }
 
+# Ends the execution, and displays a last message ($1 if set, 'Done.' otherwise)
 end() { [ -z "$1" ] && echo -e "${GREEN}Done.${NO_COLOR}" || echo -e "${GREEN}$1${NO_COLOR}"; exit 0; }
+
+# Ends the execution if given argument $1 is empty and displays usage of subcommand $2, or global usage if $2 is empty
 require_argument() { [ -z "$(eval "echo \$$1")" ] && usage $2 && echo && die "Missing <$1> argument !"; }
+
+# Ends the execution if given command $1 returns an error and displays debug information. Usage: assertok "command" $LINENO
 assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"; }
 
+# Displays usage information of subcommand $1 if set, or global usage information otherwise
 usage() {
     echo "git-xflow, v$GITXFLOW_VERSION"
     echo
