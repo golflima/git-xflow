@@ -351,12 +351,12 @@ subcommandaction_master_pull() {
 
 ##### 'version <action>' handlers #####
 
-subcommand_version_show() {
+subcommandaction_version_show() {
     echo "$GITXFLOW_VERSION"
     exit 0;
 }
 
-subcommand_version_check() {
+subcommandaction_version_check() {
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     if [ "$GITXFLOW_VERSION" = "$official_version" ] ; then
         echo -e "${GREEN}${GITXFLOW_VERSION}${NO_COLOR}"
@@ -366,7 +366,7 @@ subcommand_version_check() {
     exit 0;
 }
 
-subcommand_version_update() {
+subcommandaction_version_update() {
     wget -P "$GITXFLOW_DIR" https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow
     exit 0;
 }
