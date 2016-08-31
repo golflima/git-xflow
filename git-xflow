@@ -367,7 +367,11 @@ subcommandaction_version_check() {
 }
 
 subcommandaction_version_update() {
-    wget -P "$GITXFLOW_DIR" https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow
+    echo -n "Upgraging git-xflow from v$GITXFLOW_VERSION to ... "
+    update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow"`
+    update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    echo -n "v${update_version} ... "
+    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" && echo -e "${GREEN}Success${NO_COLOR}" || echo -e "${RED}Failed${NO_COLOR}"
     exit 0;
 }
 
