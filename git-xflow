@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.6.0+160831.1937"
+GITXFLOW_VERSION="0.6.1+160831.2350"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -59,6 +59,11 @@ require_gitflow_initialized                                 #
 
 
 ##### General functions #####
+
+# Overrides warn() of gitflow-common to add some colors
+warn() {
+    echo -e "${RED}$@${NO_COLOR}" >&2;
+}
 
 end() {
     echo "Done."; exit 0;
@@ -367,11 +372,12 @@ subcommandaction_version_check() {
 }
 
 subcommandaction_version_update() {
-    echo -n "Upgraging git-xflow from v$GITXFLOW_VERSION to ... "
+    echo -n "Upgrading git-xflow from v$GITXFLOW_VERSION to ... "
     update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow"`
     update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
     echo -n "v${update_version} ... "
-    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" && echo -e "${GREEN}Success${NO_COLOR}" || echo -e "${RED}Failed${NO_COLOR}"
+    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" && echo -e "${GREEN}Success${NO_COLOR}" || die "Failed to replace git-xflow file"
     exit 0;
 }
 
@@ -393,7 +399,9 @@ name="$3"
 if [ "$disable_gitflow_proxy" = "yes" ] ; then
     die "Not supported operation. Try 'git xflow help'."
 else
-    warn "Operation not supported by git-xflow, trying with vanilla git-flow ..."
-    echo "git flow $*"
+    warn "Operation not supported by git-xflow ('git xflow help'), trying with vanilla git-flow ..."
+    echo -e "${LIGHT_BLUE}git flow $*${NO_COLOR}"
     assertok "git flow $*" $LINENO
 fi
+
+exit 0;
