@@ -130,8 +130,12 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Show help information.
 * `git xflow help <subcommand>`
   * Show help information about `<subcommand>`.
-* `git xflow version`
-  * Show version information.
+* `git xflow version show`
+  * Show version of git-xflow.
+* `git xflow version check`
+  * Check for updates of git-xflow.
+* `git xflow version update`
+  * Update git-xflow to latest available version.
 
 ### Options
 
