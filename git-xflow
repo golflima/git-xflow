@@ -26,7 +26,7 @@
 
 ##### Constants #####
 
-GITXFLOW_VERSION="0.6.0+160831.1200"
+GITXFLOW_VERSION="0.6.0+160831.1937"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -199,7 +199,7 @@ action_cancel() {
 action_log() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    echo "Getting logs for branch '$branchname' ... Press [Enter] to display more logs, and"
+    echo "Getting logs for branch '$branchname' ..."
     git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
     end
 }
