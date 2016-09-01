@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.6.1+160831.2350"
+GITXFLOW_VERSION="0.7.0+160901.1541"
 
 # Colors
 NO_COLOR='\033[0m'
@@ -123,6 +123,11 @@ usage() {
             echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
             echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN."
             echo "    log <name>        Display commits history of hotfix <name> from $ORIGIN." ;;
+        tag)
+            echo "Usage: git xflow tag <action>"
+            echo
+            echo "Available actions are:"
+            echo "    patch <from> <to>    Build a diff-patch from tag <from> to tag <to>." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo

@@ -113,6 +113,13 @@ Usage : `git xflow [--nogf] <subcommand>`.
 * `git xflow hotfix log <name>`
   * Display commits history of hotfix `<name>` from origin.
 
+### Tag
+
+* `git xflow tag patch <from> <to>`
+  * Build a diff-patch from tag `<from>` to tag `<to>`.
+  * The patch will be built inside the working directory and zipped.
+  * A log of all modified files is also generated.
+
 ### Master
 
 * `git xflow master merged`
