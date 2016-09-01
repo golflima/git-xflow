@@ -380,17 +380,33 @@ subcommandaction_master_pull() {
 
 # Called by: 'git xflow patch make <to> <from>'
 subcommandaction_patch_make() {
-    patch_from="$3"; require_argument "patch_from" "tag"
-    patch_to="$4"; require_argument "patch_to" "tag"
+    patch_from="$3"; require_argument "patch_from" "patch"
+    patch_to="$4"; require_argument "patch_to" "patch"
     echo "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
     patch_diff=`git diff --name-status ${patch_from}...${patch_to}`
-    patch_name="patch_$(basename $(git remote show -n origin | grep fetch | cut -d: -f2-))_from_${patch_from}_to_${patch_to}"
+    patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     echo "${patch_diff}"
     echo -n "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(git diff --name-only ${patch_from}...${patch_to})" $LINENO
     end "Successfully built files ${patch_name}.zip|log"
 }
 
+# Called by: 'git flow patch apply <name>'
+subcommandaction_patch_apply() {
+    require_argument "name" "patch"
+    echo "Applying patch $name ..."
+    [ -f "$name.log"] || die "File '$name.log' not found"
+    [ -f "$name.zip"] || die "File '$name.zip' not found"
+    echo -e `less $name.log`
+    echo -n "Copying new files ... "
+    assertok "unzip $name.zip"
+    echo -n -e "${GREEN}OK${NC}\nRemoving deleted files ..."
+    for deleted_file in `less $name.log | grep -v "D\t"`; do 
+        assertok "rm -f $(echo ${deleted_file} | cut -f2)"
+    done
+    echo -e "${GREEN}OK${NC}"
+    end
+}
 
 
 ##### 'version <action>' handlers #####
