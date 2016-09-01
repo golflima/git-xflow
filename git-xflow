@@ -392,7 +392,7 @@ subcommandaction_version_update() {
 
 
 ############## Main ##############
-# This part handle the main behavior of git-flow
+# This part handle the main behavior of git-xflow
 # 1. Detect wrong usage of git-xflow and display usage info
 # 2. Process arguments
 # 3. Try to call the requested handler
