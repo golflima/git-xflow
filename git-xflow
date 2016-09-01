@@ -52,10 +52,10 @@ require_gitflow_initialized                                 #
 
 ############## General functions ##############
 
-# Displays $1 in brown/orange (overrided from gitflow-common)
+# Displays $1 in brown/orange (overriden from gitflow-common)
 warn() { echo -e "${BROWN}$@${NC}" >&2; }
 
-# Ends the execution, and displays $1 in bold red (overrided from gitflow-common)
+# Ends the execution, and displays $1 in bold red (overriden from gitflow-common)
 die() { warn "${LIGHT_RED}$@"; exit 1; }
 
 # Ends the execution, and displays a last message ($1 if set, 'Done.' otherwise)
@@ -115,11 +115,6 @@ usage() {
             echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
             echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN."
             echo "    log <name>        Display commits history of hotfix <name> from $ORIGIN." ;;
-        tag)
-            echo "Usage: git xflow tag <action>"
-            echo
-            echo "Available actions are:"
-            echo "    patch <from> <to>    Build a diff-patch from tag <from> to tag <to>." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo
@@ -128,6 +123,11 @@ usage() {
             echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
             echo "    pull <name>    Pull tag <name> from $ORIGIN."
             echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
+        patch)
+            echo "Usage: git xflow patch <action>"
+            echo
+            echo "Available actions are:"
+            echo "    make <from> <to>    Build a diff-patch from tag <from> to tag <to>." ;;
         version)
             echo "Usage: git xflow version <action>"
             echo
@@ -358,21 +358,6 @@ subcommandaction_hotfix_close() {
 
 
 
-##### 'tag <action>' handlers #####
-
-# Called by: 'git xflow tag patch <to> <from>'
-subcommandaction_tag_patch() {
-    patch_from="$3"; require_argument "patch_from" "tag"
-    patch_to="$4"; require_argument "patch_to" "tag"
-    echo "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
-    patch_diff=`git diff --name-status ${patch_from}...${patch_to}`
-    echo "${patch_diff}"
-    echo -n "${patch_diff}" > patch_$(basename $(PWD))_from_${patch_from}_to_${patch_to}.log
-    assertok "git archive -o patch_$(basename $(PWD))_from_${patch_from}_to_${patch_to}.zip ${patch_to} $(git diff --name-only ${patch_from}...${patch_to})" $LINENO
-    end
-}
-
-
 ##### 'master <action>' handlers #####
 
 # Called by: 'git xflow master pull'
@@ -387,6 +372,23 @@ subcommandaction_master_pull() {
         assertok "git pull --rebase $ORIGIN tags/$name" $LINENO
     fi
     end
+}
+
+
+
+##### 'patch <action>' handlers #####
+
+# Called by: 'git xflow patch make <to> <from>'
+subcommandaction_patch_make() {
+    patch_from="$3"; require_argument "patch_from" "tag"
+    patch_to="$4"; require_argument "patch_to" "tag"
+    echo "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
+    patch_diff=`git diff --name-status ${patch_from}...${patch_to}`
+    patch_name="patch_$(basename $(git remote show -n origin | grep fetch | cut -d: -f2-))_from_${patch_from}_to_${patch_to}"
+    echo "${patch_diff}"
+    echo -n "${patch_diff}" > ${patch_name}.log
+    assertok "git archive -o ${patch_name}.zip ${patch_to} $(git diff --name-only ${patch_from}...${patch_to})" $LINENO
+    end "Successfully built files ${patch_name}.zip|log"
 }
 
 
