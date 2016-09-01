@@ -24,7 +24,7 @@
 
 
 
-##### Constants #####
+############## Constants ##############
 
 GITXFLOW_VERSION="0.6.1+160831.2350"
 
@@ -58,7 +58,7 @@ require_gitflow_initialized                                 #
 
 
 
-##### General functions #####
+############## General functions ##############
 
 # Displays $1 in orange (overrided from gitflow-common)
 warn() { echo -e "${ORANGE}$@${NO_COLOR}" >&2; }
@@ -161,6 +161,15 @@ usage() {
 }
 
 
+
+############## git-xflow handler functions ##############
+# These functions are dynamically called when calling git-xflow
+# Typical usage: 'git xflow <subcommand> <action> <name>'
+# They are processed in the following order, if they exists
+# 1. 'subcommand_<subcommand>()'
+# 2. 'action_<action>()'
+# 3. 'subcommandaction_<subcommand>_<action>()'
+# Parameters will be available as variables: $subcommand, $action, $name
 
 ##### Direct '<subcommand>' handlers #####
 
@@ -382,7 +391,12 @@ subcommandaction_version_update() {
 
 
 
-##### Main #####
+############## Main ##############
+# This part handle the main behavior of git-flow
+# 1. Detect wrong usage of git-xflow and display usage info
+# 2. Process arguments
+# 3. Try to call the requested handler
+# 4. If no suitable handler is found, try to call git-flow or exit
 
 [ $# -lt 1 ] && usage && exit 1
 [ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
