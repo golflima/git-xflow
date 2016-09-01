@@ -186,9 +186,10 @@ action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
     require_argument "subcommand" "$subcommand"
     require_argument "name" "$name"
-    if git_branch_exists $subcommand/$name; then
+    if git_local_branch_exists $subcommand/$name; then
         echo "Finishing '$subcommand/$name' ..."
-        assertok "git flow $subcommand finish $name" $LINENO
+        assertok "git flow $subcommand finish $name -p" $LINENO
+        end
     fi
 
     subcommandaction_${subcommand}_${action} "$name" $*
@@ -307,10 +308,10 @@ subcommandaction_release_pull() {
 
 subcommandaction_release_close() {
     echo "Closing 'release/$name' ..."
-    assertok "git push --tags" $LINENO
+    assertok "git push $name" $LINENO
     assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
-    assertok "git push $ORIGIN --tags" $LINENO
+    assertok "git push $ORIGIN $name" $LINENO
 }
 
 
@@ -337,12 +338,23 @@ subcommandaction_hotfix_pull() {
 
 subcommandaction_hotfix_close() {
     echo "Closing 'hotfix/$name' ..."
-    assertok "git push --tags" $LINENO
+    assertok "git push $name" $LINENO
     assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
-    assertok "git push $ORIGIN --tags" $LINENO
+    assertok "git push $ORIGIN $name" $LINENO
 }
 
+
+
+##### 'tag <action>' handlers #####
+
+subcommandaction_tag_patch() {
+    patch_from="$3"; require_argument "patch_from" "tag"
+    patch_to="$4"; require_argument "patch_to" "tag"
+    echo "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
+    assertok "git archive -o patch_$(basename $(PWD))_from_${patch_from}_to_${patch_to}.zip ${patch_to} $(git diff --name-only ${patch_from}...${patch_to})" $LINENO
+    end
+}
 
 
 ##### 'master <action>' handlers #####
@@ -405,9 +417,9 @@ subcommand="$1"
 action="$2"
 name="$3"
 
-[ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} "$action" "$name" $*
+[ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} $*
 [ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
-[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} "$name" $*
+[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} $*
 
 if [ "$disable_gitflow_proxy" = "yes" ] ; then
     die "Not supported operation. Try 'git xflow help'."
