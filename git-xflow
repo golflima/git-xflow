@@ -29,23 +29,15 @@
 GITXFLOW_VERSION="0.7.0+160901.1541"
 
 # Colors
-NO_COLOR='\033[0m'
-BLACK='\033[0;30m'
-DARK_GRAY='\033[1;30m'
-RED='\033[0;31m'
-LIGHT_RED='\033[1;31m'
-GREEN='\033[0;32m'
-LIGHT_GREEN='\033[1;32m'
-ORANGE='\033[0;33m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-LIGHT_BLUE='\033[1;34m'
-PURPLE='\033[0;35m'
-LIGHT_PURPLE='\033[1;35m'
-CYAN='\033[0;36m'
-LIGHT_CYAN='\033[1;36m'
-LIGHT_GRAY='\033[0;37m'
-WHITE='\033[1;37m'
+NC='\033[0m'
+BLACK='\033[0;30m';         DARK_GRAY='\033[1;30m'
+RED='\033[0;31m';           LIGHT_RED='\033[1;31m'
+GREEN='\033[0;32m';         LIGHT_GREEN='\033[1;32m'
+BROWN='\033[0;33m';         YELLOW='\033[1;33m'
+BLUE='\033[0;34m';          LIGHT_BLUE='\033[1;34m'
+PURPLE='\033[0;35m';        LIGHT_PURPLE='\033[1;35m'
+CYAN='\033[0;36m';          LIGHT_CYAN='\033[1;36m'
+LIGHT_GRAY='\033[0;37m';    WHITE='\033[1;37m'
 
 
 
@@ -60,14 +52,14 @@ require_gitflow_initialized                                 #
 
 ############## General functions ##############
 
-# Displays $1 in orange (overrided from gitflow-common)
-warn() { echo -e "${ORANGE}$@${NO_COLOR}" >&2; }
+# Displays $1 in brown/orange (overrided from gitflow-common)
+warn() { echo -e "${BROWN}$@${NC}" >&2; }
 
 # Ends the execution, and displays $1 in bold red (overrided from gitflow-common)
 die() { warn "${LIGHT_RED}$@"; exit 1; }
 
 # Ends the execution, and displays a last message ($1 if set, 'Done.' otherwise)
-end() { [ -z "$1" ] && echo -e "${GREEN}Done.${NO_COLOR}" || echo -e "${GREEN}$1${NO_COLOR}"; exit 0; }
+end() { [ -z "$1" ] && echo -e "${GREEN}Done.${NC}" || echo -e "${GREEN}$1${NC}"; exit 0; }
 
 # Ends the execution if given argument $1 is empty and displays usage of subcommand $2, or global usage if $2 is empty
 require_argument() { [ -z "$(eval "echo \$$1")" ] && usage $2 && echo && die "Missing <$1> argument !"; }
@@ -178,6 +170,8 @@ usage() {
 
 ##### Direct '<subcommand>' handlers #####
 
+# Displays help (global or specific to a given <action>).
+# Called by: 'git xflow help <action>'
 subcommand_help() {
     usage $1
     exit 0;
@@ -187,6 +181,7 @@ subcommand_help() {
 
 ##### Global '<subcommand> <action>' handlers #####
 
+# Called by: 'git xflow <subcommand> close <name>'
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
     require_argument "subcommand" "$subcommand"
@@ -205,6 +200,7 @@ action_close() {
     end
 }
 
+# Called by: 'git xflow <subcommand> cancel <name>'
 action_cancel() {
     require_argument "subcommand" "$subcommand"
     require_argument "name" "$name"
@@ -215,6 +211,7 @@ action_cancel() {
     end
 }
 
+# Called by: 'git xflow <subcommand> log <optional: name>'
 action_log() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
@@ -223,6 +220,7 @@ action_log() {
     end
 }
 
+# Called by: 'git xflow <subcommand> merged <optional: name>'
 action_merged() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
@@ -233,7 +231,7 @@ action_merged() {
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
         contained=`git branch -r --contains $1 | grep ${branchname}`
-        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NO_COLOR}"
+        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
     done | sort -r
     echo
     end
@@ -243,6 +241,7 @@ action_merged() {
 
 ##### 'feature <action>' handlers #####
 
+# Called by: 'git xflow feature close <name>'
 subcommandaction_feature_close() {
     echo "Closing 'feature/$name' ..."
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
@@ -252,6 +251,7 @@ subcommandaction_feature_close() {
 
 ##### 'staging <action>' handlers #####
 
+# Called by: 'git xflow staging merge <name>'
 subcommandaction_staging_merge() {
     require_argument "name" "$name"
     previous_branch=$(git_current_branch)
@@ -275,6 +275,7 @@ subcommandaction_staging_merge() {
     end
 }
 
+# Called by: 'git xflow staging reset <optional: name>'
 subcommandaction_staging_reset() {
     previous_branch=$(git_current_branch)
     require_clean_working_tree
@@ -292,6 +293,7 @@ subcommandaction_staging_reset() {
     end
 }
 
+# Called by: 'git xflow staging pull'
 subcommandaction_staging_pull() {
     echo "Pulling 'staging' ..."
     assertok "git checkout staging" $LINENO
@@ -303,6 +305,7 @@ subcommandaction_staging_pull() {
 
 ##### 'release <action>' handlers #####
 
+# Called by: 'git xflow release pull <name>'
 subcommandaction_release_pull() {
     require_argument "name" "$name"
     echo "Pulling 'release/$name' ..."
@@ -311,6 +314,7 @@ subcommandaction_release_pull() {
     end
 }
 
+# Called by: 'git xflow release close <name>'
 subcommandaction_release_close() {
     echo "Closing 'release/$name' ..."
     assertok "git push $name" $LINENO
@@ -323,6 +327,7 @@ subcommandaction_release_close() {
 
 ##### 'hotfix <action>' handlers #####
 
+# Called by: 'git xflow hotfix publish <name>'
 subcommandaction_hotfix_publish() {
     require_argument "name" "$name"
     echo "Publishing 'hotfix/$name' to '$ORIGIN' ..."
@@ -333,6 +338,7 @@ subcommandaction_hotfix_publish() {
     end
 }
 
+# Called by: 'git xflow hotfix pull <name>'
 subcommandaction_hotfix_pull() {
     require_argument "name" "$name"
     echo "Pulling 'hotfix/$name' ..."
@@ -341,6 +347,7 @@ subcommandaction_hotfix_pull() {
     end
 }
 
+# Called by: 'git xflow hotfix close <name>'
 subcommandaction_hotfix_close() {
     echo "Closing 'hotfix/$name' ..."
     assertok "git push $name" $LINENO
@@ -353,6 +360,7 @@ subcommandaction_hotfix_close() {
 
 ##### 'tag <action>' handlers #####
 
+# Called by: 'git xflow tag patch <to> <from>'
 subcommandaction_tag_patch() {
     patch_from="$3"; require_argument "patch_from" "tag"
     patch_to="$4"; require_argument "patch_to" "tag"
@@ -367,6 +375,7 @@ subcommandaction_tag_patch() {
 
 ##### 'master <action>' handlers #####
 
+# Called by: 'git xflow master pull'
 subcommandaction_master_pull() {
     if [ -z "$name" ] ; then
         echo "Pulling '$MASTER_BRANCH' to HEAD ..."
@@ -384,29 +393,30 @@ subcommandaction_master_pull() {
 
 ##### 'version <action>' handlers #####
 
+# Called by: 'git xflow version show'
 subcommandaction_version_show() {
     echo "$GITXFLOW_VERSION"
     exit 0;
 }
 
+# Called by: 'git xflow version check'
 subcommandaction_version_check() {
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     if [ "$GITXFLOW_VERSION" = "$official_version" ] ; then
-        echo -e "${GREEN}${GITXFLOW_VERSION}${NO_COLOR}"
+        end "${LIGHT_BLUE}${GITXFLOW_VERSION}\n${GREEN}git-xflow is up-to-date."
     else
-        echo -e "${RED}${GITXFLOW_VERSION}\nNew version of git-xflow ($official_version) available at: ${BLUE}https://github.com/golflima/git-xflow${NO_COLOR}" 
+        end "${LIGHT_BLUE}${GITXFLOW_VERSION}\n${LIGHT_RED}New version of git-xflow ($official_version) available at: https://github.com/golflima/git-xflow" 
     fi
-    exit 0;
 }
 
+# Called by: 'git xflow version update'
 subcommandaction_version_update() {
     echo -n "Upgrading git-xflow from v$GITXFLOW_VERSION to ... "
     update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow"`
     update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
     echo -n "v${update_version} ... "
-    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" && echo -e "${GREEN}Success${NO_COLOR}" || die "Failed to replace git-xflow file"
-    exit 0;
+    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" end "Success" || die "Failed to replace git-xflow file"
 }
 
 
@@ -433,7 +443,7 @@ if [ "$disable_gitflow_proxy" = "yes" ] ; then
     die "Not supported operation. Try 'git xflow help'."
 else
     warn "Operation not supported by git-xflow ('git xflow help'), trying with vanilla git-flow ..."
-    echo -e "${LIGHT_BLUE}git flow $*${NO_COLOR}"
+    echo -e "${LIGHT_BLUE}git flow $*${NC}"
     assertok "git flow $*" $LINENO
 fi
 
