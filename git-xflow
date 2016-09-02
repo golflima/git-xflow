@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.7.0+160902.1515"
+GITXFLOW_VERSION="0.7.1+160902.1520"
 
 # Colors
 NC='\033[0m'
@@ -453,7 +453,7 @@ subcommandaction_version_update() {
     update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
     echo -n "v${update_version} ... "
-    echo "${update_content}" > "$GITXFLOW_DIR/git-xflow" end "Success" || die "Failed to replace git-xflow file"
+    echo "${update_content}" > "$GITXFLOW_DIR/git-xflow" && end "Success" || die "Failed to replace git-xflow file"
 }
 
 
