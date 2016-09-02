@@ -156,6 +156,7 @@ usage() {
             echo "    release    Manage release branches."
             echo "    hotfix     Manage hotfix branches."
             echo "    master     Manage $MASTER_BRANCH branch."
+            echo "    patch      Build and apply patches."
             echo "    help       Show help information."
             echo "    version    Show version information and check for updates."
             echo
