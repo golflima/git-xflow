@@ -396,7 +396,7 @@ subcommandaction_patch_make() {
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     trace "${patch_diff}"
     echo "${patch_diff}" > ${patch_name}.log
-    assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v "^D" | cut -f2)" $LINENO
+    assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
     end "Successfully built files ${patch_name}.zip|log"
 }
 
@@ -406,13 +406,12 @@ subcommandaction_patch_apply() {
     info "Applying patch $name ..."
     [ -f "$name.log" ] || die "File '$name.log' not found"
     [ -f "$name.zip" ] || die "File '$name.zip' not found"
-    trace `less $name.log`
+    patch_diff="$(cat $name.log)"
+    trace "${patch_diff}"
     info "Copying new files ..."
     assertok "unzip $name.zip" $LINENO
     info "Removing deleted files ..."
-    for deleted_file in `less $name.log | grep D\t`; do 
-        assertok "rm $(echo ${deleted_file} | cut -f2)" $LINENO
-    done
+    assertok "rm -i $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
     end
 }
 
