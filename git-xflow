@@ -411,7 +411,7 @@ subcommandaction_patch_apply() {
     info "Copying new files ..."
     assertok "unzip $name.zip" $LINENO
     info "Removing deleted files ..."
-    assertok "rm -i $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
+    assertok "rm -i $(echo "${patch_diff}" | grep ^D | cut -f2)" $LINENO
     end
 }
 
