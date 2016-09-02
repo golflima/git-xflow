@@ -392,11 +392,11 @@ subcommandaction_patch_make() {
     patch_from="$3"; require_argument "patch_from" "patch"
     patch_to="$4"; require_argument "patch_to" "patch"
     info "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
-    patch_diff=`git diff --name-status ${patch_from}...${patch_to}`
+    patch_diff=`git diff --name-status ${patch_from}..${patch_to}`
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     trace "${patch_diff}"
-    echo -n "${patch_diff}" > ${patch_name}.log
-    assertok "git archive -o ${patch_name}.zip ${patch_to} $(git diff --name-only ${patch_from}...${patch_to})" $LINENO
+    echo "${patch_diff}" > ${patch_name}.log
+    assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v "^D" | cut -f2)" $LINENO
     end "Successfully built files ${patch_name}.zip|log"
 }
 
@@ -410,7 +410,7 @@ subcommandaction_patch_apply() {
     info "Copying new files ..."
     assertok "unzip $name.zip" $LINENO
     info "Removing deleted files ..."
-    for deleted_file in `less $name.log | grep "D\t"`; do 
+    for deleted_file in `less $name.log | grep D\t`; do 
         assertok "rm $(echo ${deleted_file} | cut -f2)" $LINENO
     done
     end
@@ -443,7 +443,7 @@ subcommandaction_version_update() {
     update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
     echo -n "v${update_version} ... "
-    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" end "Success" || die "Failed to replace git-xflow file"
+    echo "${update_content}" > "$GITXFLOW_DIR/git-xflow" end "Success" || die "Failed to replace git-xflow file"
 }
 
 
