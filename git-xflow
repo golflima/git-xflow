@@ -257,8 +257,9 @@ action_review() {
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
     [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch"] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
-    branch_diff=`git diff ${compare_to_branch}..${branch_name} --diff-algorithm=minimal --color`
+    [ -z "$compare_to_branch" ] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
+    branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C`
     echo -e "${branch_diff}"
     end
 }
