@@ -124,6 +124,19 @@ Usage : `git xflow [--nogf] <subcommand>`.
 * `git xflow master log`
   * Display commits history of master from origin.
 
+### Patch
+
+* `git xflow patch make <from> <to>`
+  * Build a diff-patch from branch or tag `<from>` to branch or tag `<to>`.
+  * The patch will be built inside the working directory and zipped.
+  * A log of all modified files is also generated.
+* `git xflow patch makefromtags <from> <to>`
+  * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (n° relative to latest tag, 1-based index).
+  * The patch will be built inside the working directory and zipped.
+  * A log of all modified files is also generated.
+* `git xflow patch apply <name>`
+  * Apply patch `<name>` in current working directory.
+
 ### General
 
 * `git xflow help`
