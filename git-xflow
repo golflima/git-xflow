@@ -136,11 +136,11 @@ usage() {
             echo "Usage: git xflow patch <action>"
             echo
             echo "Available actions are:"
-            echo "    make <from> <to>            Build a diff-patch from branch or tag <from> to branch or tag <to>."
-            echo "    showtags                    Display list of tags as used by 'git xflow patch makefromtags <to> <from>'."
-            echo "    makefromtags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
-            echo "    makefromtags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (n° relative to latest tag, 1-based index)."
-            echo "    apply <name>                Apply patch <name> in current working directory." ;;
+            echo "    make <from> <to>        Build a diff-patch from branch or tag <from> to branch or tag <to>."
+            echo "    showtags                Display list of tags as used by 'git xflow patch maketags <to> <from>'."
+            echo "    maketags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
+            echo "    maketags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
+            echo "    apply <name>            Apply patch <name> in current working directory." ;;
         version)
             echo "Usage: git xflow version <action>"
             echo
@@ -402,22 +402,23 @@ subcommandaction_patch_make() {
     trace "${patch_diff}"
     echo "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
+    echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
     end "Successfully built patch '${patch_name}'."
 }
 
-# Called by: 'git xflow patch makefromtags <to> <from>'
-subcommandaction_patch_makefromtags() {
-    [ -z "$3" ] && patch_from="2" || patch_from="$3"
-    [ -z "$4" ] && patch_to="1" || patch_to="$4"
-    patch_from_tag=`git tag | tail -n ${patch_from} | head -n 1`
-    patch_to_tag=`git tag | tail -n ${patch_to} | head -n 1`
+# Called by: 'git xflow patch maketags <optional: to> <optional: from>'
+subcommandaction_patch_maketags() {
+    [ -z "$3$4" ] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
+    [ -z "$3" -o -z "$4" ] && usage $2 && echo && die "Missing <to> or <from> argument !"
+    patch_from_tag=`git tag | head -n $3 | tail -n 1`
+    patch_to_tag=`git tag | head -n $4 | tail -n 1`
     subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
 }
 
 # Called by: 'git xflow patch showtags'
 subcommandaction_patch_showtags() {
-    info "List of tags as used by 'git xflow patch makefromtags <to> <from>' ..."
-    trace "$(git tag | tac | nl)"
+    info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
+    trace "$(git tag | nl)"
     end
 }
 
@@ -427,12 +428,12 @@ subcommandaction_patch_apply() {
     info "Applying patch $name ..."
     [ -f "$name.log" ] || die "File '$name.log' not found"
     [ -f "$name.zip" ] || die "File '$name.zip' not found"
-    patch_diff="$(cat $name.log)"
+    patch_diff="$(<$name.log)"
     trace "${patch_diff}"
-    info "Copying new files ..."
+    info "Copying new and modified files ..."
     assertok "unzip $name.zip" $LINENO
-    info "Removing deleted files ..."
-    assertok "rm -i $(echo "${patch_diff}" | grep ^D | cut -f2)" $LINENO
+    deleted_files="$(echo "${patch_diff}" | grep ^D | cut -f2)"
+    [ -n "${deleted_files}" ] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" $LINENO
     end
 }
 

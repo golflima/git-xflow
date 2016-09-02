@@ -131,13 +131,13 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.                "
 * `git xflow patch showtags`
-  * Display list of tags as used by `git xflow patch makefromtags <to> <from>`.
-* `git xflow patch makefromtags`
+  * Display list of tags as used by `git xflow patch maketags <to> <from>`.
+* `git xflow patch maketags`
   * Build a diff-patch from previons tag (n-1) to latest tag (n).
   * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.
-* `git xflow patch makefromtags <from> <to>`
-  * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (n° relative to latest tag, 1-based index).
+* `git xflow patch maketags <from> <to>`
+  * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (see `git xflow patch showtags` for n°).
   * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.
 * `git xflow patch apply <name>`
