@@ -136,7 +136,8 @@ usage() {
             echo "Usage: git xflow patch <action>"
             echo
             echo "Available actions are:"
-            echo "    make <from> <to>    Build a diff-patch from tag <from> to tag <to>." ;;
+            echo "    make <from> <to>    Build a diff-patch from tag <from> to tag <to>."
+            echo "    apply <name>        Apply patch <name> in current working directory." ;;
         version)
             echo "Usage: git xflow version <action>"
             echo
@@ -397,7 +398,7 @@ subcommandaction_patch_make() {
     trace "${patch_diff}"
     echo "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
-    end "Successfully built files ${patch_name}.zip|log"
+    end "Successfully built patch '${patch_name}'."
 }
 
 # Called by: 'git flow patch apply <name>'
