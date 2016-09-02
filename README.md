@@ -129,6 +129,12 @@ Usage : `git xflow [--nogf] <subcommand>`.
 * `git xflow patch make <from> <to>`
   * Build a diff-patch from branch or tag `<from>` to branch or tag `<to>`.
   * The patch will be built inside the working directory and zipped.
+  * A log of all modified files is also generated.                "
+* `git xflow patch showtags`
+  * Display list of tags as used by `git xflow patch makefromtags <to> <from>`.
+* `git xflow patch makefromtags`
+  * Build a diff-patch from previons tag (n-1) to latest tag (n).
+  * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.
 * `git xflow patch makefromtags <from> <to>`
   * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (n° relative to latest tag, 1-based index).

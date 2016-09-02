@@ -137,6 +137,8 @@ usage() {
             echo
             echo "Available actions are:"
             echo "    make <from> <to>            Build a diff-patch from branch or tag <from> to branch or tag <to>."
+            echo "    showtags                    Display list of tags as used by 'git xflow patch makefromtags <to> <from>'."
+            echo "    makefromtags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
             echo "    makefromtags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (n° relative to latest tag, 1-based index)."
             echo "    apply <name>                Apply patch <name> in current working directory." ;;
         version)
@@ -405,11 +407,18 @@ subcommandaction_patch_make() {
 
 # Called by: 'git xflow patch makefromtags <to> <from>'
 subcommandaction_patch_makefromtags() {
-    patch_from="$3"; require_argument "patch_from" "$subcommand"
-    patch_to="$4"; require_argument "patch_to" "$subcommand"
+    [ -z "$3" ] && patch_from="2" || patch_from="$3"
+    [ -z "$4" ] && patch_to="1" || patch_to="$4"
     patch_from_tag=`git tag | tail -n ${patch_from} | head -n 1`
     patch_to_tag=`git tag | tail -n ${patch_to} | head -n 1`
     subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
+}
+
+# Called by: 'git xflow patch showtags'
+subcommandaction_patch_showtags() {
+    info "List of tags as used by 'git xflow patch makefromtags <to> <from>' ..."
+    trace "$(git tag | tac | nl)"
+    end
 }
 
 # Called by: 'git flow patch apply <name>'
