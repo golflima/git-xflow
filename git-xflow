@@ -228,26 +228,38 @@ action_cancel() {
 # Called by: 'git xflow <subcommand> log <optional: name>'
 action_log() {
     require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    info "Getting logs for branch '$branchname' ..."
-    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Getting logs for branch '$branch_name' ..."
+    git log "$branch_name" --color --graph --decorate --topo-order --abbrev-commit --date=short \
+        --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
     end
 }
 
 # Called by: 'git xflow <subcommand> merged <optional: name>'
 action_merged() {
     require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    info "Checking branches merged into '$branchname' ..."
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Checking branches merged into '$branch_name' ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
-        contained=`git branch -r --contains $1 | grep ${branchname}`
+        contained=`git branch -r --contains $1 | grep ${branch_name}`
         echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
     done | sort -r
     echo
+    end
+}
+
+action_review() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
+    [ -z "$compare_to_branch"] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
+    branch_diff=`git diff ${compare_to_branch}..${branch_name} --diff-algorithm=minimal --color`
+    echo -e "${branch_diff}"
     end
 }
 
