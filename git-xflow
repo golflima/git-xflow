@@ -261,6 +261,30 @@ action_review() {
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C`
     echo -e "${branch_diff}"
+    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    html_diff="
+<html>
+    <head>
+        <title>Diff of ${repo_name} from "${compare_to_branch}" to "${branch_name}"</title>
+        <style type=\"text/css\">
+            body { color: gray; font-family: monospace; }
+            .file { color: blue; font-weight: bold; }
+            .line { color: purple; text-decoration: italic; }
+            .added { color: green; text-decoration: underline; }
+            .deleted { color: red; text-decoration: line-through; }
+            .added:hover, .deleted:hover { text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        $(echo "${branch_diff}" | sed "s/</\&lt;/g" | sed "s/>/\&gt;/g" | sed "s/ /\&nbsp;/g" | sed "s/$/<br \/>/" \
+            | sed "s/\[1m\([^\[]*\)\[m/<span class=\"file\">\1<\/span>/g" \
+            | sed "s/\[36m\([^\[]*\)\[m/<span class=\"line\">\1<\/span>/g" \
+            | sed "s/\[31m\([^\[]*\)\[m/<span class=\"deleted\">\1<\/span>/g" \
+            | sed "s/\[32m\([^\[]*\)\[m/<span class=\"added\">\1<\/span>/g" \
+            | sed "s/\[m<br \/>$/<br \/>/" )
+    </body>
+</html>"
+    echo "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
     end
 }
 
