@@ -258,34 +258,50 @@ action_review() {
     [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
     [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
+    echo -e "$(git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)"
+    end
+}
+
+action_reviewhtml() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
+    [ -z "$compare_to_branch" ] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
-        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C`
-    echo -e "${branch_diff}"
+        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     html_diff="
 <html>
     <head>
-        <title>Diff of ${repo_name} from "${compare_to_branch}" to "${branch_name}"</title>
+        <title>Diff of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
         <style type=\"text/css\">
-            body { color: gray; font-family: monospace; }
-            .file { color: blue; font-weight: bold; }
+            body { color: gray; background-color: white; font-family: monospace; }
+            .file_header { color: blue; font-weight: bold; }
+            .file_description { color: blue; }
             .line { color: purple; text-decoration: italic; }
-            .added { color: green; text-decoration: underline; }
-            .deleted { color: red; text-decoration: line-through; }
+            .file_header, .file_description, .line { background-color: ghostwhite; text-decoration: underline overline; }
+            .unchanged { }
+            .added { color: green; background-color: greenyellow; }
+            .deleted { color: red; background-color: bisque; text-decoration: line-through; }
             .added:hover, .deleted:hover { text-decoration: none; }
+            .unchanged, .added, .modified { white-space: pre; }
         </style>
     </head>
     <body>
-        $(echo "${branch_diff}" | sed "s/</\&lt;/g" | sed "s/>/\&gt;/g" | sed "s/ /\&nbsp;/g" | sed "s/$/<br \/>/" \
-            | sed "s/\[1m\([^\[]*\)\[m/<span class=\"file\">\1<\/span>/g" \
-            | sed "s/\[36m\([^\[]*\)\[m/<span class=\"line\">\1<\/span>/g" \
-            | sed "s/\[31m\([^\[]*\)\[m/<span class=\"deleted\">\1<\/span>/g" \
-            | sed "s/\[32m\([^\[]*\)\[m/<span class=\"added\">\1<\/span>/g" \
-            | sed "s/\[m<br \/>$/<br \/>/" )
+        <h1>Diff of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
+        $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
+            -e "s/^@@\([^@]*\)@@/\n<br \/>\n<br \/><span class=\"line\">\1<\/span><br \/>\n/g" \
+            | sed -e "s/^-\(.*\)$/<span class=\"deleted\">\1<\/span>/g" \
+            -e "s/^+\(.*\)$/<span class=\"added\">\1<\/span>/g" \
+            -e "s/^ \(.*\)$/<span class=\"unchanged\">\1<\/span>/g" \
+            -e "s/^\(diff --git.*\)$/\n<br \/>\n<br \/>\n<br \/>\n<br \/><span class=\"file_header\">\1<\/span>/g" \
+            | sed -e "s/^\([^< -+~@].*\)$/<span class=\"file_description\">\1<\/span>/g" )
     </body>
 </html>"
     echo "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
-    end
+    end "Review successfully saved into file 'review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html'."
 }
 
 
