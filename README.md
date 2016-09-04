@@ -62,6 +62,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete feature `<name>` from local and origin.
 * `git xflow feature log <name>`
   * Display commits history of feature `<name>` from origin.
+* `git xflow feature review <name>`
+  * Review changes between feature `<name>` and develop with less.
+* `git xflow feature reviewhtml <name>`
+  * Review changes between feature `<name>` and develop in a HTML file.
 
 ### Staging
 
@@ -77,6 +81,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Pull staging from origin.
 * `git xflow staging log`
   * Display commits history of staging from origin.
+* `git xflow staging review`
+  * Review changes between staging and develop with less.
+* `git xflow staging reviewhtml`
+  * Review changes between staging and develop in a HTML file.
 
 ### Develop
 
@@ -84,6 +92,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Check branches merged into develop on origin.
 * `git xflow develop log`
   * Display commits history of develop from origin.
+* `git xflow develop review`
+  * Review changes between develop and master with less.
+* `git xflow develop reviewhtml`
+  * Review changes between develop and master in a HTML file.
 
 ### Release
 
@@ -97,6 +109,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete release `<name>` from local and origin.
 * `git xflow release log <name>`
   * Display commits history of release `<name>` from origin.
+* `git xflow release review <name>`
+  * Review changes between release `<name>` and master with less.
+* `git xflow release reviewhtml <name>`
+  * Review changes between release `<name>` and master in a HTML file.
 
 ### Hotfix
 
@@ -112,6 +128,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete hotfix `<name>` from local and origin.
 * `git xflow hotfix log <name>`
   * Display commits history of hotfix `<name>` from origin.
+* `git xflow hotfix review <name>`
+  * Review changes between hotfix `<name>` and master with less.
+* `git xflow hotfix reviewhtml <name>`
+  * Review changes between hotfix `<name>` and master in a HTML file.
 
 ### Master
 
@@ -129,9 +149,15 @@ Usage : `git xflow [--nogf] <subcommand>`.
 * `git xflow patch make <from> <to>`
   * Build a diff-patch from branch or tag `<from>` to branch or tag `<to>`.
   * The patch will be built inside the working directory and zipped.
+  * A log of all modified files is also generated.                "
+* `git xflow patch showtags`
+  * Display list of tags as used by `git xflow patch maketags <to> <from>`.
+* `git xflow patch maketags`
+  * Build a diff-patch from previons tag (n-1) to latest tag (n).
+  * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.
-* `git xflow patch makefromtags <from> <to>`
-  * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (n° relative to latest tag, 1-based index).
+* `git xflow patch maketags <from> <to>`
+  * Build a diff-patch from tag n°`<from>` to tag n°`<to>` (see `git xflow patch showtags` for n°).
   * The patch will be built inside the working directory and zipped.
   * A log of all modified files is also generated.
 * `git xflow patch apply <name>`

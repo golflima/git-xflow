@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.7.1+160902.1520"
+GITXFLOW_VERSION="0.8.0+160905.0007"
 
 # Colors
 NC='\033[0m'
@@ -85,10 +85,12 @@ usage() {
             echo "Usage: git xflow feature <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>    Check branches merged into feature <name> on $ORIGIN."
-            echo "    close <name>     Finish and push feature <name> to $ORIGIN."
-            echo "    cancel <name>    Delete feature <name> from local and $ORIGIN."
-            echo "    log <name>       Display commits history of feature <name> from $ORIGIN." ;;
+            echo "    merged <name>        Check branches merged into feature <name> on $ORIGIN."
+            echo "    close <name>         Finish and push feature <name> to $ORIGIN."
+            echo "    cancel <name>        Delete feature <name> from local and $ORIGIN."
+            echo "    log <name>           Display commits history of feature <name> from $ORIGIN."
+            echo "    review <name>        Review changes between feature <name> and $DEVELOP_BRANCH with less."
+            echo "    reviewhtml <name>    Review changes between feature <name> and $DEVELOP_BRANCH in a HTML file." ;;
         staging)
             echo "Usage: git xflow staging <action>"
             echo
@@ -98,32 +100,40 @@ usage() {
             echo "    reset           Reset staging branch to develop."
             echo "    reset <name>    Reset staging branch to feature <name>."
             echo "    pull            Pull staging from $ORIGIN."
-            echo "    log             Display commits history of staging from $ORIGIN." ;;
+            echo "    log             Display commits history of staging from $ORIGIN."
+            echo "    review          Review changes between staging and $DEVELOP_BRANCH with less."
+            echo "    reviewhtml      Review changes between staging and $DEVELOP_BRANCH in a HTML file." ;;
         develop)
             echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
             echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
-            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN." ;;
+            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN."
+            echo "    review         Review changes between staging and $MASTER_BRANCH with less."
+            echo "    reviewhtml     Review changes between staging and $MASTER_BRANCH in a HTML file." ;;
         release)
             echo "Usage: git xflow release <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>    Check branches merged into release <name> on $ORIGIN."
-            echo "    pull <name>      Pull release <name> from $ORIGIN."
-            echo "    close <name>     Finish and push release <name> to $ORIGIN."
-            echo "    cancel <name>    Delete release <name> from local and $ORIGIN."
-            echo "    log <name>       Display commits history of release <name> from $ORIGIN." ;;
+            echo "    merged <name>        Check branches merged into release <name> on $ORIGIN."
+            echo "    pull <name>          Pull release <name> from $ORIGIN."
+            echo "    close <name>         Finish and push release <name> to $ORIGIN."
+            echo "    cancel <name>        Delete release <name> from local and $ORIGIN."
+            echo "    log <name>           Display commits history of release <name> from $ORIGIN."
+            echo "    review <name>        Review changes between release <name> and $MASTER_BRANCH with less."
+            echo "    reviewhtml <name>    Review changes between release <name> and $MASTER_BRANCH in a HTML file." ;;
         hotfix)
             echo "Usage: git xflow hotfix <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>     Check branches merged into hotfix <name> on $ORIGIN."
-            echo "    publish <name>    Publish hotfix <name> to $ORIGIN."
-            echo "    pull <name>       Pull hotfix <name> from $ORIGIN."
-            echo "    close <name>      Finish and push hotfix <name> to $ORIGIN."
-            echo "    cancel <name>     Delete hotfix <name> from local and $ORIGIN."
-            echo "    log <name>        Display commits history of hotfix <name> from $ORIGIN." ;;
+            echo "    merged <name>        Check branches merged into hotfix <name> on $ORIGIN."
+            echo "    publish <name>       Publish hotfix <name> to $ORIGIN."
+            echo "    pull <name>          Pull hotfix <name> from $ORIGIN."
+            echo "    close <name>         Finish and push hotfix <name> to $ORIGIN."
+            echo "    cancel <name>        Delete hotfix <name> from local and $ORIGIN."
+            echo "    log <name>           Display commits history of hotfix <name> from $ORIGIN."
+            echo "    review <name>        Review changes between hotfix <name> and $MASTER_BRANCH with less."
+            echo "    reviewhtml <name>    Review changes between hotfix <name> and $MASTER_BRANCH in a HTML file." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo
@@ -136,9 +146,11 @@ usage() {
             echo "Usage: git xflow patch <action>"
             echo
             echo "Available actions are:"
-            echo "    make <from> <to>            Build a diff-patch from branch or tag <from> to branch or tag <to>."
-            echo "    makefromtags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (n° relative to latest tag, 1-based index)."
-            echo "    apply <name>                Apply patch <name> in current working directory." ;;
+            echo "    make <from> <to>        Build a diff-patch from branch or tag <from> to branch or tag <to>."
+            echo "    showtags                Display list of tags as used by 'git xflow patch maketags <to> <from>'."
+            echo "    maketags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
+            echo "    maketags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
+            echo "    apply <name>            Apply patch <name> in current working directory." ;;
         version)
             echo "Usage: git xflow version <action>"
             echo
@@ -156,6 +168,7 @@ usage() {
             echo "    release    Manage release branches."
             echo "    hotfix     Manage hotfix branches."
             echo "    master     Manage $MASTER_BRANCH branch."
+            echo "    patch      Build and apply patches."
             echo "    help       Show help information."
             echo "    version    Show version information and check for updates."
             echo
@@ -184,7 +197,7 @@ usage() {
 # Displays help (global or specific to a given <action>).
 # Called by: 'git xflow help <action>'
 subcommand_help() {
-    usage $1
+    usage $action
     exit 0;
 }
 
@@ -225,27 +238,99 @@ action_cancel() {
 # Called by: 'git xflow <subcommand> log <optional: name>'
 action_log() {
     require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    info "Getting logs for branch '$branchname' ..."
-    git log "$branchname" --color --graph --decorate --topo-order --abbrev-commit --date=short --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Getting logs for branch '$branch_name' ..."
+    git log "$branch_name" --color --graph --decorate --topo-order --abbrev-commit --date=short \
+        --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
     end
 }
 
 # Called by: 'git xflow <subcommand> merged <optional: name>'
 action_merged() {
     require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branchname="${subcommand}" || branchname="${subcommand}/${name}"
-    info "Checking branches merged into '$branchname' ..."
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Checking branches merged into '$branch_name' ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
         set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
-        contained=`git branch -r --contains $1 | grep ${branchname}`
+        contained=`git branch -r --contains $1 | grep ${branch_name}`
         echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
     done | sort -r
     echo
     end
+}
+
+# Called by: 'git xflow <subcommand> review <optional: name>'
+action_review() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [ -n "$(echo "$subcommand" | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
+    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
+    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
+    echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \
+        git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
+        git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
+    end
+}
+
+# Called by: 'git xflow <subcommand> reviewhtml <optional: name>'
+action_reviewhtml() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [ -n "$(echo $subcommand | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
+    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
+    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
+    branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
+    files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
+    html_diff="<!DOCTYPE html>
+    <html>
+        <head>
+            <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
+            <meta charset=\"UTF-8\">
+            <style type=\"text/css\">
+                body { color: black; background-color: white; font-family: monospace; }
+                p { float: left; margin: 0;  white-space: pre; }
+                a { color: inherit; text-decoration: inherit; }
+                a:hover {text-decoration: underline; }
+                h3 { color: blue; font-weight: bold; }
+                h4 { color: purple; }
+                h4 + br + p { background-color: bisque; font-style:oblique; }
+                h4 + br + p + p { background-color: greenyellow; font-style:oblique; }
+                h3, h4, .s { background-color: ghostwhite; text-decoration: underline overline; }
+                .s { color: blue; }
+                .f { background-color: white !important; }
+                .u, .m { color: gray; }
+                .a { color: green; background-color: greenyellow; }
+                .d { color: red; background-color: bisque; text-decoration: line-through; }
+                .d:hover { text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
+            <h2>Files</h2>
+            $(echo "${files_diff}" | sed -e "s/^A\t\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^M\t\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^D\t\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
+            <h2>Content</h2>
+            $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
+                -e "s/^@@ -\(.*\) +\(.*\) @@/\n<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>\n/g" \
+                | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
+                -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
+                -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
+                -e "s/^\(diff --git ${compare_to_branch}:\(.*\) ${branch_name}:.*\)$/\n<br \/><h3><a id=\"\2\" href=\"#top\">\1<\/a><\/h3>/g" \
+                | sed -e "s/^\([^< -+~@].*\)$/<p class=\"s\">\1<\/p>/g" )
+        </body>
+    </html>"
+    echo "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
+    end "Review successfully saved into file 'review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html'."
 }
 
 
@@ -399,16 +484,24 @@ subcommandaction_patch_make() {
     trace "${patch_diff}"
     echo "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
+    echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
     end "Successfully built patch '${patch_name}'."
 }
 
-# Called by: 'git xflow patch makefromtags <to> <from>'
-subcommandaction_patch_makefromtags() {
-    patch_from="$3"; require_argument "patch_from" "$subcommand"
-    patch_to="$4"; require_argument "patch_to" "$subcommand"
-    patch_from_tag=`git tag | tail -n ${patch_from} | head -n 1`
-    patch_to_tag=`git tag | tail -n ${patch_to} | head -n 1`
+# Called by: 'git xflow patch maketags <optional: to> <optional: from>'
+subcommandaction_patch_maketags() {
+    [ -z "$3$4" ] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
+    [ -z "$3" -o -z "$4" ] && usage $2 && echo && die "Missing <to> or <from> argument !"
+    patch_from_tag=`git tag | head -n $3 | tail -n 1`
+    patch_to_tag=`git tag | head -n $4 | tail -n 1`
     subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
+}
+
+# Called by: 'git xflow patch showtags'
+subcommandaction_patch_showtags() {
+    info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
+    trace "$(git tag | nl)"
+    end
 }
 
 # Called by: 'git flow patch apply <name>'
@@ -417,12 +510,12 @@ subcommandaction_patch_apply() {
     info "Applying patch $name ..."
     [ -f "$name.log" ] || die "File '$name.log' not found"
     [ -f "$name.zip" ] || die "File '$name.zip' not found"
-    patch_diff="$(cat $name.log)"
+    patch_diff="$(<$name.log)"
     trace "${patch_diff}"
-    info "Copying new files ..."
+    info "Copying new and modified files ..."
     assertok "unzip $name.zip" $LINENO
-    info "Removing deleted files ..."
-    assertok "rm -i $(echo "${patch_diff}" | grep ^D | cut -f2)" $LINENO
+    deleted_files="$(echo "${patch_diff}" | grep ^D | cut -f2)"
+    [ -n "${deleted_files}" ] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" $LINENO
     end
 }
 
