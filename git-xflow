@@ -296,34 +296,34 @@ action_reviewhtml() {
             <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
             <style type=\"text/css\">
                 body { color: black; background-color: white; font-family: monospace; }
-                span { float: left; white-space: pre; }
-                a { color: inherit; text-decoration:inherit; }
+                p { float: left; margin: 0;  white-space: pre; }
+                a { color: inherit; text-decoration: inherit; }
                 a:hover {text-decoration: underline; }
-                .file { background-color: white !important; }
-                .file_header { color: blue; font-weight: bold; }
-                .file_description { color: blue; }
-                .line { color: purple; text-decoration: italic; }
-                .file_header, .file_description, .line { background-color: ghostwhite; text-decoration: underline overline; }
-                .unchanged, .modified { color: gray; }
-                .added { color: green; background-color: greenyellow; }
-                .deleted { color: red; background-color: bisque; text-decoration: line-through; }
-                .deleted:hover { text-decoration: none; }
+                .f { background-color: white !important; }
+                .h { color: blue; font-weight: bold; }
+                .s { color: blue; }
+                .l { color: purple; text-decoration: italic; }
+                .h, .s, .l { background-color: ghostwhite; text-decoration: underline overline; }
+                .u, .m { color: gray; }
+                .a { color: green; background-color: greenyellow; }
+                .d { color: red; background-color: bisque; text-decoration: line-through; }
+                .d:hover { text-decoration: none; }
             </style>
         </head>
         <body>
             <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
             <h2>Files</h2>
-            $(echo "${files_diff}" | sed -e "s/^A\t\(.*\)$/<span class=\"file added\"><a href=\"#\1\">&<\/a><\/span><br \/>/g" \
-                -e "s/^M\t\(.*\)$/<span class=\"file modified\"><a href=\"#\1\">&<\/a><\/span><br \/>/g" \
-                -e "s/^D\t\(.*\)$/<span class=\"file deleted\"><a href=\"#\1\">&<\/a><\/span><br \/>/g" )
+            $(echo "${files_diff}" | sed -e "s/^A\t\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^M\t\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^D\t\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
             <h2>Content</h2>
             $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
-                -e "s/^@@\([^@]*\)@@/\n<br \/>\n<br \/><span class=\"line\">\1<\/span><br \/>\n/g" \
-                | sed -e "s/^-\(.*\)$/<span class=\"deleted\">\1<\/span>/g" \
-                -e "s/^+\(.*\)$/<span class=\"added\">\1<\/span>/g" \
-                -e "s/^ \(.*\)$/<span class=\"unchanged\">\1<\/span>/g" \
-                -e "s/^\(diff --git ${compare_to_branch}:\(.*\) ${branch_name}:.*\)$/\n<br \/>\n<br \/>\n<br \/>\n<br \/><span class=\"file_header\"><a id=\"\2\" href=\"#top\">\1<\/a><\/span>/g" \
-                | sed -e "s/^\([^< -+~@].*\)$/<span class=\"file_description\">\1<\/span>/g" )
+                -e "s/^@@\([^@]*\)@@/\n<br \/>\n<br \/><p class=\"l\">\1<\/p><br \/>\n/g" \
+                | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
+                -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
+                -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
+                -e "s/^\(diff --git ${compare_to_branch}:\(.*\) ${branch_name}:.*\)$/\n<br \/>\n<br \/>\n<br \/>\n<br \/><p class=\"h\"><a id=\"\2\" href=\"#top\">\1<\/a><\/p>/g" \
+                | sed -e "s/^\([^< -+~@].*\)$/<p class=\"s\">\1<\/p>/g" )
         </body>
     </html>"
     echo "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
