@@ -262,6 +262,7 @@ action_merged() {
     end
 }
 
+# Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
@@ -277,6 +278,7 @@ action_review() {
     end
 }
 
+# Called by: 'git xflow <subcommand> reviewhtml <optional: name>'
 action_reviewhtml() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
