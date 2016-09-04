@@ -62,6 +62,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete feature `<name>` from local and origin.
 * `git xflow feature log <name>`
   * Display commits history of feature `<name>` from origin.
+* `git xflow feature review <name>`
+  * Review changes between feature `<name>` and develop with less.
+* `git xflow feature reviewhtml <name>`
+  * Review changes between feature `<name>` and develop in a HTML file.
 
 ### Staging
 
@@ -77,6 +81,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Pull staging from origin.
 * `git xflow staging log`
   * Display commits history of staging from origin.
+* `git xflow staging review`
+  * Review changes between staging and develop with less.
+* `git xflow staging reviewhtml`
+  * Review changes between staging and develop in a HTML file.
 
 ### Develop
 
@@ -84,6 +92,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Check branches merged into develop on origin.
 * `git xflow develop log`
   * Display commits history of develop from origin.
+* `git xflow develop review`
+  * Review changes between develop and master with less.
+* `git xflow develop reviewhtml`
+  * Review changes between develop and master in a HTML file.
 
 ### Release
 
@@ -97,6 +109,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete release `<name>` from local and origin.
 * `git xflow release log <name>`
   * Display commits history of release `<name>` from origin.
+* `git xflow release review <name>`
+  * Review changes between release `<name>` and master with less.
+* `git xflow release reviewhtml <name>`
+  * Review changes between release `<name>` and master in a HTML file.
 
 ### Hotfix
 
@@ -112,6 +128,10 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * Delete hotfix `<name>` from local and origin.
 * `git xflow hotfix log <name>`
   * Display commits history of hotfix `<name>` from origin.
+* `git xflow hotfix review <name>`
+  * Review changes between hotfix `<name>` and master with less.
+* `git xflow hotfix reviewhtml <name>`
+  * Review changes between hotfix `<name>` and master in a HTML file.
 
 ### Master
 
