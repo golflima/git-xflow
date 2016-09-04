@@ -257,7 +257,8 @@ action_review() {
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
     [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch" ] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
+    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
+    info "Reviewing from '${compare_to_branch}' to '${branch_name}' ..."
     echo -e "$(git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
         git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
@@ -269,7 +270,8 @@ action_reviewhtml() {
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
     [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch" ] && die "Branch 'branch_name' is not supported by git-xflow for reviews !"
+    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
+    info "Reviewing from '${compare_to_branch}' to '${branch_name}' ..."
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
@@ -277,7 +279,7 @@ action_reviewhtml() {
     html_diff="
     <html>
         <head>
-            <title>Diff of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
+            <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
             <style type=\"text/css\">
                 body { color: black; background-color: white; font-family: monospace; }
                 span { float: left; white-space: pre; }
@@ -295,7 +297,7 @@ action_reviewhtml() {
             </style>
         </head>
         <body>
-            <h1><a id=\"top\"></a>Diff of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
+            <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
             <h2>Files</h2>
             $(echo "${files_diff}" | sed -e "s/^A\t\(.*\)$/<span class=\"file added\"><a href=\"#\1\">&<\/a><\/span><br \/>/g" \
                 -e "s/^M\t\(.*\)$/<span class=\"file modified\"><a href=\"#\1\">&<\/a><\/span><br \/>/g" \
