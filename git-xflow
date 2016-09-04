@@ -255,8 +255,8 @@ action_merged() {
 action_review() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo "$subcommand" | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
@@ -270,8 +270,8 @@ action_review() {
 action_reviewhtml() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
+    [ -n "$(echo $subcommand | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
