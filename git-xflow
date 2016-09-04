@@ -255,11 +255,13 @@ action_merged() {
 action_review() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    info "Reviewing from '${compare_to_branch}' to '${branch_name}' ..."
-    echo -e "$(git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
+    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
+    echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \
+        git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
         git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
     end
@@ -271,11 +273,11 @@ action_reviewhtml() {
     [ -n "$(echo $subcommand | grep "feature|staging")"] && compare_to_branch="$DEVELOP_BRANCH"
     [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH|release|hotfix")"] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    info "Reviewing from '${compare_to_branch}' to '${branch_name}' ..."
+    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
-    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     html_diff="
     <html>
         <head>
