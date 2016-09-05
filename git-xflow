@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.8.1+160905.1430"
+GITXFLOW_VERSION="0.8.2+160905.1500"
 
 # Colors
 NC='\033[0m'
@@ -290,6 +290,7 @@ action_reviewhtml() {
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
+    TAB=$'\t' # Fix for old version of 'sed' (Mac OS X ...)
     html_diff="<!DOCTYPE html>
     <html>
         <head>
@@ -318,9 +319,9 @@ action_reviewhtml() {
         <body>
             <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
             <h2>Files</h2>
-            $(echo "${files_diff}" | sed -e "s/^A\t\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^M\t\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^D\t\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
+            $(echo "${files_diff}" | sed -e "s/^A${TAB}\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^M${TAB}\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
+                -e "s/^D${TAB}\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
             <h2>Content</h2><div>
             $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
                 -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>\
