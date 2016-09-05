@@ -295,6 +295,7 @@ action_reviewhtml() {
         <head>
             <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
             <meta charset=\"UTF-8\">
+            <meta name=\"generator\" content=\"git-xflow, v${GITXFLOW_VERSION}\">
             <style type=\"text/css\">
                 body { color: black; background-color: white; font-family: monospace; }
                 p { display: inline-block; margin: 0; white-space: pre; }
