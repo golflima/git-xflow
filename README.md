@@ -8,18 +8,18 @@ An extension to [git-flow](http://github.com/nvie/gitflow), which automatize som
 Getting started
 ---------------
 
-As `git xflow` extends `git flow`, it is required to know what `git flow` is about:
+As *git xflow* extends *git flow*, it is required to know what *git flow* is about:
 
 * [Vincent Driessen's branching model](http://nvie.com/posts/a-successful-git-branching-model/)
 * [Jeff Kreeftmeijer's blog post about git-flow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
 * [Daniel Kummer's git-flow cheatsheet](http://danielkummer.github.io/git-flow-cheatsheet/)
 
-Of course, a knowledge of `git` is also required:
+Of course, a knowledge of *git* is also required:
 
 * [Git official documentation](https://git-scm.com/documentation)
 * [GitHub git cheat sheet](https://services.github.com/kit/downloads/github-git-cheat-sheet.pdf)
 
-`git xflow` automatizes some reccurent tasks with `git flow`, such as:
+*git xflow* automatizes some reccurent tasks with *git flow*, such as:
 
 * `git xflow feature/release/hotfix close` to finish and push a feature/release/hotfix
 * `git xflow staging` to merge the content of unfinished features into a staging (demonstration) branch
@@ -31,6 +31,8 @@ To get help, just type in a terminal : `git xflow`
 
 Install git-xflow
 -----------------
+
+*git xflow* runs on Windows, Linux, and Mac OS. In facts, it runs everywhere *git* is able to run.
 
 1. [Install git-flow](https://github.com/nvie/gitflow/wiki/Installation)
 2. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) git-xflow, then unzip files ...
@@ -186,7 +188,7 @@ Usage : `git xflow [--nogf] <subcommand>`.
 Licence terms
 -------------
 
-git-xflow is published under the terms of [GNU Lesser General Public License v3](http://www.gnu.org/licenses/lgpl-3.0.html), see the [LICENSE](LICENSE) file.
+*git-xflow* is published under the terms of [GNU Lesser General Public License v3](http://www.gnu.org/licenses/lgpl-3.0.html), see the [LICENSE](LICENSE) file.
 
 Although the GNU LGPLv3 does not require you to share any modifications you make to the source code,
 you are very much encouraged and invited to contribute back your modifications to the community, preferably in a Github fork, of course.
