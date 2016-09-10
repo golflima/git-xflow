@@ -201,4 +201,4 @@ Support
 -------
 
 You can support this project with
-[![Flattr](//button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=0ywe2d&url=https%3A%2F%2Fgithub.com%2Fgolflima%2Fgit-xflow)
+[![Flattr](https://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=0ywe2d&url=https%3A%2F%2Fgithub.com%2Fgolflima%2Fgit-xflow)
