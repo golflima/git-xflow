@@ -547,7 +547,8 @@ subcommandaction_version_check() {
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
     echo -n "Upgrading git-xflow from v$GITXFLOW_VERSION to ... "
-    update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow"`
+    [ -z "$name" ] && $name="master"
+    update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/$name/git-xflow"`
     update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
     echo -n "v${update_version} ... "
