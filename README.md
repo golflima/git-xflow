@@ -194,3 +194,11 @@ Although the GNU LGPLv3 does not require you to share any modifications you make
 you are very much encouraged and invited to contribute back your modifications to the community, preferably in a Github fork, of course.
 
 For a list of all contributors, please see the [AUTHORS](AUTHORS) file.
+
+
+
+Support
+-------
+
+You can support this project with
+[![Flattr](//button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=0ywe2d&url=https%3A%2F%2Fgithub.com%2Fgolflima%2Fgit-xflow)
