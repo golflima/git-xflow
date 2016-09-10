@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.8.2+160905.1500"
+GITXFLOW_VERSION="0.9.0+160910.2345"
 
 # Colors
 NC='\033[0m'
