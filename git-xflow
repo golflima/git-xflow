@@ -263,49 +263,13 @@ action_reviewhtml() {
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
     TAB=$'\t';LN=$'\n' # Fix for old version of 'sed' (Mac OS X ...)
-    trace "Using template : '${GITXFLOW_DIR}/${GITXFLOW_TEMPLATE_REVIEWHTML}'"
-    html_diff="<!DOCTYPE html>
-    <html>
-        <head>
-            <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
-            <meta charset=\"UTF-8\">
-            <meta name=\"generator\" content=\"git-xflow, v${GITXFLOW_VERSION}\">
-            <style type=\"text/css\">
-                body { color: black; background-color: white; font-family: monospace; }
-                p { display: inline-block; margin: 0 -0.5em 0 0; white-space: pre; }
-                a { color: inherit; text-decoration: inherit; }
-                a:hover {text-decoration: underline; }
-                h3 { color: blue; font-weight: bold; }
-                h4 { color: purple; }
-                h4 + br + p { background-color: bisque; font-style:oblique; }
-                h4 + br + p + p { background-color: greenyellow; font-style:oblique; }
-                h3, h4, .s { background-color: ghostwhite; text-decoration: underline overline; }
-                .s { color: blue; }
-                .f { background-color: white !important; }
-                .u, .m { color: gray; }
-                .a { color: green; background-color: greenyellow; }
-                .d { color: red; background-color: bisque; text-decoration: line-through; }
-                .d:hover { text-decoration: none; }
-                .c { white-space: nowrap; }
-            </style>
-        </head>
-        <body>
-            <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
-            <h2>Files</h2>
-            $(echo "${files_diff}" | sed -e "s/^A${TAB}\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^M${TAB}\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^D${TAB}\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
-            <h2>Content</h2><div>
-            $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
-                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>${LN}/g" \
-                | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
-                -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
-                -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
-                -e "s/^\(diff --git ${compare_to_branch}:\(.*\) ${branch_name}:.*\)$/<br \/><\/div><h3><a id=\"\2\" href=\"#top\">\1<\/a><\/h3><div class=\"c\">/g" \
-                | sed -e "s/^\([^< -+~@].*\)$/<p class=\"s\">\1<\/p>/g" )
-            </div>
-        </body>
-    </html>"
+    review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
+    for template in "$GITXFLOW_TEMPLATE_REVIEWHTML"; do
+        review_suffix=".html"
+        parse_template ${template}
+        echo -n "${parsed_template}" > "${review_name}${review_suffix}"
+        trace "File '${review_name}${review_suffix}' generated from template '${template}'."
+    done
     echo -n "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
     end "Review successfully saved into file 'review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html'."
 }
