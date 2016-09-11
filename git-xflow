@@ -463,9 +463,8 @@ subcommandaction_patch_make() {
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
     for template in "$GITXFLOW_TEMPLATE_PATCHMAKE"; do
         patch_suffix=""
-        template_content=""
         parse_template ${template}
-        echo -n "${template_content}" > ${patch_name}${patch_suffix}
+        echo -n "${parsed_template}" > ${patch_name}${patch_suffix}
         trace "File '${patch_name}${patch_suffix}' generated from template '${template}'."
     done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."

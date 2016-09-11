@@ -94,26 +94,27 @@ parse_template() {
         template_file="${DOT_GIT_DIR}/../${template_name}"
     fi
     [ -f "${template_file}" ] || die "Cannot find template file '${template_file}'."
-    template_content=""
-    while read -r line ; do
-        while [[ "$line" =~ (<%=[[:blank:]]*([^%[:blank:]]*)[[:blank:]]*%>) ]] ; do
-            lhs=${BASH_REMATCH[1]}
-            value=${BASH_REMATCH[2]}
-            rhs="$(eval echo -n "\"\$$value\"")"
-            line=${line//$lhs/$rhs}
-        done
-        while [[ "$line" =~ (<%\$([^%]*)%>) ]] ; do
-            lhs=${BASH_REMATCH[1]}
-            command=${BASH_REMATCH[2]}
-            eval "export $command"
-            line=${line//$lhs/}
-        done
-        while [[ "$line" =~ (<%([^%]*)%>) ]] ; do
-            lhs=${BASH_REMATCH[1]}
-            command=${BASH_REMATCH[2]}
-            rhs="$(eval "$command")"
-            line=${line//$lhs/$rhs}
-        done
-        template_content="${template_content}\n${line}"
-    done < ${template_file}
+    parsed_template="$(<${template_file})"
+    while [[ "$parsed_template" =~ (<%=[[:blank:]]*([^%[:blank:]]*)[[:blank:]]*%>) ]] ; do
+        lhs=${BASH_REMATCH[1]}
+        value=${BASH_REMATCH[2]}
+        rhs="$(eval echo -n "\"\$$value\"")"
+        parsed_template=${parsed_template//$lhs/$rhs}
+    done
+    while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]] ; do
+        lhs=${BASH_REMATCH[1]}
+        command=${BASH_REMATCH[2]}
+        eval "export $command"
+        parsed_template=${parsed_template//$lhs/}
+    done
+    while [[ "$parsed_template" =~ (<%#([^%]*)%>) ]] ; do
+        lhs=${BASH_REMATCH[1]}
+        parsed_template=${parsed_template//$lhs/}
+    done
+    while [[ "$parsed_template" =~ (<%([^%]*)%>) ]] ; do
+        lhs=${BASH_REMATCH[1]}
+        command=${BASH_REMATCH[2]}
+        rhs="$(eval "$command")"
+        parsed_template=${parsed_template//$lhs/$rhs}
+    done
 }
