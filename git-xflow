@@ -36,6 +36,7 @@ GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
 gitflow_load_settings                                       #
 require_gitflow_initialized                                 #
 . "$GITXFLOW_DIR/gitxflow-common"                           #
+gitxflow_load_settings                                      #
 #############################################################
 
 
@@ -167,6 +168,11 @@ subcommand_help() {
     exit 0;
 }
 
+# Called by: 'git xflow init'
+subcommand_init() {
+    gitxflow_save_settings
+    end
+}
 
 
 ##### Global '<subcommand> <action>' handlers #####
@@ -256,7 +262,8 @@ action_reviewhtml() {
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
-    TAB=$'\t' # Fix for old version of 'sed' (Mac OS X ...)
+    TAB=$'\t';LN=$'\n' # Fix for old version of 'sed' (Mac OS X ...)
+    trace "Using template : '${GITXFLOW_DIR}/${GITXFLOW_TEMPLATE_REVIEWHTML}'"
     html_diff="<!DOCTYPE html>
     <html>
         <head>
@@ -290,8 +297,7 @@ action_reviewhtml() {
                 -e "s/^D${TAB}\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
             <h2>Content</h2><div>
             $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
-                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>\
-                    /g" \
+                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>${LN}/g" \
                 | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
                 -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
                 -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
@@ -445,7 +451,7 @@ subcommandaction_master_pull() {
 
 ##### 'patch <action>' handlers #####
 
-# Called by: 'git xflow patch make <to> <from>'
+# Called by: 'git xflow patch make <from> <to>'
 subcommandaction_patch_make() {
     patch_from="$3"; require_argument "patch_from" "$subcommand"
     patch_to="$4"; require_argument "patch_to" "$subcommand"
@@ -455,11 +461,18 @@ subcommandaction_patch_make() {
     trace "${patch_diff}"
     echo "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
+    for template in "$GITXFLOW_TEMPLATE_PATCHMAKE"; do
+        patch_suffix=""
+        template_content=""
+        parse_template ${template}
+        echo -n "${template_content}" > ${patch_name}${patch_suffix}
+        trace "File '${patch_name}${patch_suffix}' generated from template '${template}'."
+    done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
     end "Successfully built patch '${patch_name}'."
 }
 
-# Called by: 'git xflow patch maketags <optional: to> <optional: from>'
+# Called by: 'git xflow patch maketags <optional: from> <optional: to>'
 subcommandaction_patch_maketags() {
     [ -z "$3$4" ] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
     [ -z "$3" -o -z "$4" ] && usage $2 && echo && die "Missing <to> or <from> argument !"

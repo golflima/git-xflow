@@ -29,6 +29,7 @@ Of course, a knowledge of *git* is also required:
 To get help, just type in a terminal : `git xflow`
 
 
+
 Install git-xflow
 -----------------
 
@@ -184,6 +185,8 @@ Usage : `git xflow [--nogf] <subcommand>`.
   * `--nogf` tells to git-xflow to *not* forward `<subcommand>` to `git flow <subcommand>` if it is not handled by git-xflow.
 
 
+
+__________________________________________________
 
 Licence terms
 -------------
