@@ -80,14 +80,16 @@ gitxflow_load_settings() {
 
 # Save settings that can be overridden using git config
 gitxflow_save_settings() {
-    assertok "git config --remove-section gitxflow.branch"
-    assertok "git config --add gitxflow.branch.staging"
-    assertok "git config --remove-section gitxflow.template"
-    assertok "git config --add gitxflow.template.reviewhtml templates/reviewhtml"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake-log"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake-zip"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake-sh"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake-cmd"
+    git config --remove-section gitxflow.branch
+    assertok "git config --add gitxflow.branch.staging staging"
+    git config --remove-section gitxflow.template
+    assertok "git config --add gitxflow.template.reviewhtml templates/reviewhtml/default"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/log"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/zip"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/sh"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/cmd"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/tar"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake/targz"
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
