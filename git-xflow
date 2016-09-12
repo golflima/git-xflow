@@ -62,22 +62,22 @@ usage() {
             echo "Usage: git xflow staging <action>"
             echo
             echo "Available actions are:"
-            echo "    merge <name>    Merge feature <name> into staging branch."
-            echo "    merged          Check branches merged into staging on $ORIGIN."
-            echo "    reset           Reset staging branch to develop."
-            echo "    reset <name>    Reset staging branch to feature <name>."
-            echo "    pull            Pull staging from $ORIGIN."
-            echo "    log             Display commits history of staging from $ORIGIN."
-            echo "    review          Review changes between staging and $DEVELOP_BRANCH with less."
-            echo "    reviewhtml      Review changes between staging and $DEVELOP_BRANCH in a HTML file." ;;
+            echo "    merge <name>    Merge feature <name> into $STAGING_BRANCH branch."
+            echo "    merged          Check branches merged into $STAGING_BRANCH on $ORIGIN."
+            echo "    reset           Reset $STAGING_BRANCH branch to develop."
+            echo "    reset <name>    Reset $STAGING_BRANCH branch to feature <name>."
+            echo "    pull            Pull $STAGING_BRANCH from $ORIGIN."
+            echo "    log             Display commits history of $STAGING_BRANCH from $ORIGIN."
+            echo "    review          Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH with less."
+            echo "    reviewhtml      Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH in a HTML file." ;;
         develop)
             echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
             echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
             echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN."
-            echo "    review         Review changes between staging and $MASTER_BRANCH with less."
-            echo "    reviewhtml     Review changes between staging and $MASTER_BRANCH in a HTML file." ;;
+            echo "    review         Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH with less."
+            echo "    reviewhtml     Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH in a HTML file." ;;
         release)
             echo "Usage: git xflow release <action>"
             echo
@@ -201,7 +201,7 @@ action_cancel() {
     require_argument "subcommand" "$subcommand"
     require_argument "name" "$subcommand"
     info "Cancelling branch '$subcommand/$name' ..."
-    [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
+    [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout $DEVELOP_BRANCH" $LINENO
     git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
     git_remote_branch_exists $subcommand/$name && assertok "git branch -D $ORIGIN/$subcommand/$name" $LINENO
     end
@@ -239,7 +239,7 @@ action_review() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     [ -n "$(echo "$subcommand" | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "develop\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
@@ -255,7 +255,7 @@ action_reviewhtml() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     [ -n "$(echo $subcommand | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
+    [ -n "$(echo $subcommand | grep "develop\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
@@ -276,7 +276,7 @@ action_reviewhtml() {
 
 # Called by: 'git xflow feature close <name>'
 subcommandaction_feature_close() {
-    info "Closing 'feature/$name' ..."
+    info "Closing '${FEATURE_PREFIX}${name}' ..."
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
 }
 
@@ -289,20 +289,20 @@ subcommandaction_staging_merge() {
     require_argument "name" "$subcommand"
     previous_branch=$(git_current_branch)
     require_clean_working_tree
-    info "Merging 'feature/$name' into staging ..."
+    info "Merging '${FEATURE_PREFIX}${name}' into $STAGING_BRANCH ..."
     git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
-    if git_remote_branch_exists staging; then
-        assertok "git checkout staging" $LINENO
+    if git_remote_branch_exists $STAGING_BRANCH; then
+        assertok "git checkout $STAGING_BRANCH" $LINENO
     else
         if git_local_branch_exists staging; then
-            assertok "git checkout feature/$name" $LINENO
-            assertok "git branch -D staging" $LINENO
+            assertok "git checkout ${FEATURE_PREFIX}${name}" $LINENO
+            assertok "git branch -D $STAGING_BRANCH" $LINENO
         fi
-        assertok "git checkout -b staging $DEVELOP_BRANCH" $LINENO
-        assertok "git branch --set-upstream-to=$ORIGIN/staging" $LINENO
+        assertok "git checkout -b $STAGING_BRANCH $DEVELOP_BRANCH" $LINENO
+        assertok "git branch --set-upstream-to=$ORIGIN/$STAGING_BRANCH" $LINENO
     fi
     assertok "git pull" $LINENO
-    assertok "git merge feature/$name" $LINENO
+    assertok "git merge ${FEATURE_PREFIX}${name}" $LINENO
     assertok "git push" $LINENO
     assertok "git checkout $previous_branch" $LINENO
     end
@@ -313,24 +313,24 @@ subcommandaction_staging_reset() {
     previous_branch=$(git_current_branch)
     require_clean_working_tree
     if [ -z "$name" ] ; then
-        info "Resetting staging to '$DEVELOP_BRANCH' ..."
-        assertok "git checkout -B staging $DEVELOP_BRANCH" $LINENO
+        info "Resetting $STAGING_BRANCH to '$DEVELOP_BRANCH' ..."
+        assertok "git checkout -B $STAGING_BRANCH $DEVELOP_BRANCH" $LINENO
     else
-        info "Resetting staging to 'feature/$name' ..."
-        git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
+        info "Resetting $STAGING_BRANCH to '${FEATURE_PREFIX}${name}' ..."
+        git_local_branch_exists ${FEATURE_PREFIX}${name} || assertok "git flow feature track $name" $LINENO
         assertok "git pull" $LINENO
-        assertok "git checkout -B staging feature/$name" $LINENO
+        assertok "git checkout -B $STAGING_BRANCH ${FEATURE_PREFIX}${name}" $LINENO
     fi
-    assertok "git push -f --set-upstream $ORIGIN staging" $LINENO
+    assertok "git push -f --set-upstream $ORIGIN $STAGING_BRANCH" $LINENO
     assertok "git checkout $previous_branch" $LINENO
     end
 }
 
 # Called by: 'git xflow staging pull'
 subcommandaction_staging_pull() {
-    info "Pulling 'staging' ..."
-    assertok "git checkout staging" $LINENO
-    assertok "git pull --rebase $ORIGIN staging" $LINENO
+    info "Pulling '$STAGING_BRANCH' ..."
+    assertok "git checkout $STAGING_BRANCH" $LINENO
+    assertok "git pull --rebase $ORIGIN $STAGING_BRANCH" $LINENO
     end
 }
 
@@ -341,15 +341,15 @@ subcommandaction_staging_pull() {
 # Called by: 'git xflow release pull <name>'
 subcommandaction_release_pull() {
     require_argument "name" "$subcommand"
-    info "Pulling 'release/$name' ..."
-    assertok "git checkout release/$name" $LINENO
-    assertok "git pull --rebase $ORIGIN release/$name" $LINENO
+    info "Pulling '${RELEASE_PREFIX}${name}' ..."
+    assertok "git checkout ${RELEASE_PREFIX}${name}" $LINENO
+    assertok "git pull --rebase $ORIGIN ${RELEASE_PREFIX}${name}" $LINENO
     end
 }
 
 # Called by: 'git xflow release close <name>'
 subcommandaction_release_close() {
-    info "Closing 'release/$name' ..."
+    info "Closing '${RELEASE_PREFIX}${name}' ..."
     assertok "git push $name" $LINENO
     assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
     assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
@@ -363,20 +363,20 @@ subcommandaction_release_close() {
 # Called by: 'git xflow hotfix publish <name>'
 subcommandaction_hotfix_publish() {
     require_argument "name" "$subcommand"
-    info "Publishing 'hotfix/$name' to '$ORIGIN' ..."
+    info "Publishing '${HOTFIX_PREFIX}${name}' to '$ORIGIN' ..."
     assertok "git fetch -q $ORIGIN" $LINENO
-    assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
-    assertok "git fetch -q $ORIGIN hotfix/$name" $LINENO
-    assertok "git checkout hotfix/$name" $LINENO
+    assertok "git push -u $ORIGIN ${HOTFIX_PREFIX}${name}:${HOTFIX_PREFIX}${name}" $LINENO
+    assertok "git fetch -q $ORIGIN ${HOTFIX_PREFIX}${name}" $LINENO
+    assertok "git checkout ${HOTFIX_PREFIX}${name}" $LINENO
     end
 }
 
 # Called by: 'git xflow hotfix pull <name>'
 subcommandaction_hotfix_pull() {
     require_argument "name" "$subcommand"
-    info "Pulling 'hotfix/$name' ..."
-    assertok "git checkout hotfix/$name" $LINENO
-    assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
+    info "Pulling '${HOTFIX_PREFIX}${name}' ..."
+    assertok "git checkout ${HOTFIX_PREFIX}${name}" $LINENO
+    assertok "git pull --rebase $ORIGIN ${HOTFIX_PREFIX}${name}" $LINENO
     end
 }
 

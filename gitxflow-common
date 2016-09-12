@@ -72,10 +72,16 @@ gitxflow_load_settings() {
     export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
 	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get-all gitxflow.template.reviewhtml)"
     export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get-all gitxflow.template.patchmake)"
+    export STAGING_BRANCH="$(git config --get gitflow.branch.staging)"
+    export FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
+    export RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
+    export HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
 }
 
 # Save settings that can be overridden using git config
 gitxflow_save_settings() {
+    assertok "git config --remove-section gitxflow.branch"
+    assertok "git config --add gitxflow.branch.staging"
     assertok "git config --remove-section gitxflow.template"
     assertok "git config --add gitxflow.template.reviewhtml templates/reviewhtml"
     assertok "git config --add gitxflow.template.patchmake templates/patchmake-log"
