@@ -84,11 +84,14 @@ gitxflow_save_settings() {
     assertok "git config --add gitxflow.template.patchmake templates/patchmake-cmd"
 }
 
-# Parse and evaluate a given template. Usage: 'parse_template <filename>'
+# Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
 parse_template() {
     [ -z "$1" ] && die "Missing template name."
-    local template_name template_file lhs value rhs
+    [ -z "$2" ] && die "Missing default generated file name."
+    local template_name generated_file_name generated_file_suffix template_file lhs value rhs parsed_template
     template_name="$1"
+    generated_file_name="$2"
+    generated_file_suffix="$3"
     template_file="${GITXFLOW_DIR}/${template_name}"
     if [ -f "${template_name}" ] ; then
         template_file="${template_name}"
@@ -98,7 +101,7 @@ parse_template() {
         template_file="${DOT_GIT_DIR}/../${template_name}"
     fi
     if [ ! -f "${template_file}" ] ; then
-        warn "Cannot find template file for template '$1'."
+        warn "Template file not found: '$1'."
         return 1;
     fi
     parsed_template="$(<${template_file})"
@@ -107,13 +110,21 @@ parse_template() {
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\$$value\"")"
+        if [ $? != 0 ] ; then
+            warn "Template '$1': error when evaluating variable tag: '$lhs'."
+            return 10;
+        fi
         parsed_template="${parsed_template//"$lhs"/"$rhs"}"
     done
-    # Handle not echoed command tags: '<%$ command %>'
-    while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]] ; do
+    # Handle not echoed command tags: '<%@ command %>'
+    while [[ "$parsed_template" =~ (<%@([^%]*)%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
-        eval "export $value"
+        eval "$value"
+        if [ $? != 0 ] ; then
+            warn "Template '$1': error when evaluating not echoed command tag: '$lhs'."
+            return 11;
+        fi
         parsed_template="${parsed_template//"$lhs"/}"
     done
     # Handle comment tags: '<%# comment #%>'
@@ -121,11 +132,31 @@ parse_template() {
         lhs="${BASH_REMATCH[1]}"
         parsed_template="${parsed_template//"$lhs"/}"
     done
-    # Handle echoed command tags: '<% command %>'
-    while [[ "$parsed_template" =~ (<%([^%]*)%>) ]] ; do
+    # Handle echoed command tags: '<%$ command %>'
+    while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval "$value")"
+        if [ $? != 0 ] ; then
+            warn "Template '$1': error when evaluating echoed command tag: '$lhs'."
+            return 12;
+        fi
         parsed_template="${parsed_template//"$lhs"/"$rhs"}"
     done
+    # Handle to-file command tags: '<%: command %>'
+    while [[ "$parsed_template" =~ (<%:([^%]*)%>) ]] ; do
+        lhs="${BASH_REMATCH[1]}"
+        value="${BASH_REMATCH[2]}"
+        eval "$value" > "${generated_file_name}${generated_file_suffix}"
+        if [ $? = 0 ] ; then
+            info "File '${generated_file_name}${generated_file_suffix}' generated from template '${template}'."
+            return 0;
+        else
+            warn "Template '$1': error when evaluating to-file command tag: '$lhs'."
+            return 13;
+        fi
+    done
+    echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
+    info "File '${generated_file_name}${generated_file_suffix}' generated from template '${template}'."
+    return 0;
 }

@@ -1,0 +1,1 @@
+<%@ generated_file_suffix=".tar.gz" %><%: git archive --format=tar.gz -9 ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2) %>

@@ -113,11 +113,11 @@ usage() {
             echo "Usage: git xflow patch <action>"
             echo
             echo "Available actions are:"
-            echo "    make <from> <to>        Build a diff-patch from branch or tag <from> to branch or tag <to>."
-            echo "    showtags                Display list of tags as used by 'git xflow patch maketags <to> <from>'."
-            echo "    maketags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
-            echo "    maketags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
-            echo "    apply <name>            Apply patch <name> in current working directory." ;;
+            echo "    make <from> <to>    Build a diff-patch from branch or tag <from> to branch or tag <to>."
+            echo "    showtags            Display list of tags as used by 'git xflow patch maketags <to> <from>'."
+            echo "    tags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
+            echo "    tags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
+            echo "    apply <name>        Apply patch <name> in current working directory." ;;
         version)
             echo "Usage: git xflow version <action>"
             echo
@@ -265,10 +265,7 @@ action_reviewhtml() {
     TAB=$'\t';LN=$'\n' # Fix for old version of 'sed' (Mac OS X ...)
     review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
     echo "$GITXFLOW_TEMPLATE_REVIEWHTML" | while read template ; do
-        review_suffix=".html"
-        parse_template "${template}" || continue;
-        echo -n "${parsed_template}" > "${review_name}${review_suffix}"
-        trace "File '${review_name}${review_suffix}' generated from template '${template}'."
+        parse_template "${template}" "${review_name}" ".html"
     done
     end "Review successfully saved."
 }
@@ -424,17 +421,14 @@ subcommandaction_patch_make() {
     trace "${patch_diff}"
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
     echo "$GITXFLOW_TEMPLATE_PATCHMAKE" | while read template ; do
-        patch_suffix=""
-        parse_template ${template} || continue;
-        echo -n "${parsed_template}" > ${patch_name}${patch_suffix}
-        trace "File '${patch_name}${patch_suffix}' generated from template '${template}'."
+        parse_template "${template}" "${patch_name}" ""
     done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
     end "Successfully built patch '${patch_name}'."
 }
 
-# Called by: 'git xflow patch maketags <optional: from> <optional: to>'
-subcommandaction_patch_maketags() {
+# Called by: 'git xflow patch tags <optional: from> <optional: to>'
+subcommandaction_patch_tags() {
     [ -z "$3$4" ] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
     [ -z "$3" -o -z "$4" ] && usage $2 && echo && die "Missing <to> or <from> argument !"
     patch_from_tag=`git tag | head -n $3 | tail -n 1`

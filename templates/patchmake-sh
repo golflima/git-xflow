@@ -28,7 +28,7 @@
 
 NAME="<%= patch_name %>" <%# Gets the name of the patch, to retrieve all its related files #%>
 GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>" <%# Gets the version of git-xflow used to generated the patch #%>
-<%$ patch_suffix="_install.sh" %> <%# Adds a specific suffix to the name of the generated file #%>
+<%@ generated_file_suffix="_install.sh" %> <%# Adds a specific suffix to the name of the generated file #%>
 
 
 ############## Constants ##############
