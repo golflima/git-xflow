@@ -266,12 +266,11 @@ action_reviewhtml() {
     review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
     for template in "$GITXFLOW_TEMPLATE_REVIEWHTML"; do
         review_suffix=".html"
-        parse_template ${template}
+        parse_template "${template}"
         echo -n "${parsed_template}" > "${review_name}${review_suffix}"
         trace "File '${review_name}${review_suffix}' generated from template '${template}'."
     done
-    echo -n "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
-    end "Review successfully saved into file 'review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html'."
+    end "Review successfully saved."
 }
 
 

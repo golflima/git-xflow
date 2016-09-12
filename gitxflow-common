@@ -76,14 +76,14 @@ gitxflow_load_settings() {
 
 # Save settings that can be overridden using git config
 gitxflow_save_settings() {
-    assertok "git config gitxflow.template.reviewhtml template-reviewhtml"
-    assertok "git config gitxflow.template.patchmake template-patchmake-sh template-patchmake-cmd"
+    assertok "git config gitxflow.template.reviewhtml templates/reviewhtml"
+    assertok "git config gitxflow.template.patchmake templates/patchmake-sh template/patchmake-cmd"
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <filename>'
 parse_template() {
     [ -z "$1" ] && die "Missing template name."
-    local template_name template_file line lhs value command rhs
+    local template_name template_file lhs value rhs
     template_name="$1"
     template_file="${GITXFLOW_DIR}/${template_name}"
     if [ -f "${template_name}" ] ; then
@@ -96,25 +96,25 @@ parse_template() {
     [ -f "${template_file}" ] || die "Cannot find template file '${template_file}'."
     parsed_template="$(<${template_file})"
     while [[ "$parsed_template" =~ (<%=[[:blank:]]*([^%[:blank:]]*)[[:blank:]]*%>) ]] ; do
-        lhs=${BASH_REMATCH[1]}
-        value=${BASH_REMATCH[2]}
+        lhs="${BASH_REMATCH[1]}"
+        value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\$$value\"")"
-        parsed_template=${parsed_template//$lhs/$rhs}
+        parsed_template="${parsed_template//"$lhs"/"$rhs"}"
     done
     while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]] ; do
-        lhs=${BASH_REMATCH[1]}
-        command=${BASH_REMATCH[2]}
-        eval "export $command"
-        parsed_template=${parsed_template//$lhs/}
+        lhs="${BASH_REMATCH[1]}"
+        value="${BASH_REMATCH[2]}"
+        eval "export $value"
+        parsed_template="${parsed_template//"$lhs"/}"
     done
     while [[ "$parsed_template" =~ (<%#([^%]*)%>) ]] ; do
-        lhs=${BASH_REMATCH[1]}
-        parsed_template=${parsed_template//$lhs/}
+        lhs="${BASH_REMATCH[1]}"
+        parsed_template="${parsed_template//"$lhs"/}"
     done
     while [[ "$parsed_template" =~ (<%([^%]*)%>) ]] ; do
-        lhs=${BASH_REMATCH[1]}
-        command=${BASH_REMATCH[2]}
-        rhs="$(eval "$command")"
-        parsed_template=${parsed_template//$lhs/$rhs}
+        lhs="${BASH_REMATCH[1]}"
+        value="${BASH_REMATCH[2]}"
+        rhs="$(eval "$value")"
+        parsed_template="${parsed_template//"$lhs"/"$rhs"}"
     done
 }
