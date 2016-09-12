@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><%@ generated_file_suffix=".html" %>
 <html>
     <head>
         <title>Review of '<%= repo_name %>' from '<%= compare_to_branch %>' to '<%= branch_name %>'</title>
