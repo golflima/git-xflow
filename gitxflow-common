@@ -102,22 +102,26 @@ parse_template() {
         return 1;
     fi
     parsed_template="$(<${template_file})"
+    # Handle variable tags: '<%= variablename %>'
     while [[ "$parsed_template" =~ (<%=[[:blank:]]*([^%[:blank:]]*)[[:blank:]]*%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\$$value\"")"
         parsed_template="${parsed_template//"$lhs"/"$rhs"}"
     done
+    # Handle not echoed command tags: '<%$ command %>'
     while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         eval "export $value"
         parsed_template="${parsed_template//"$lhs"/}"
     done
-    while [[ "$parsed_template" =~ (<%#([^%]*)%>) ]] ; do
+    # Handle comment tags: '<%# comment #%>'
+    while [[ "$parsed_template" =~ (<%#([^#]*)#%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         parsed_template="${parsed_template//"$lhs"/}"
     done
+    # Handle echoed command tags: '<% command %>'
     while [[ "$parsed_template" =~ (<%([^%]*)%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
