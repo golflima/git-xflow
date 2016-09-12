@@ -264,9 +264,9 @@ action_reviewhtml() {
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
     TAB=$'\t';LN=$'\n' # Fix for old version of 'sed' (Mac OS X ...)
     review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
-    for template in "$GITXFLOW_TEMPLATE_REVIEWHTML"; do
+    echo "$GITXFLOW_TEMPLATE_REVIEWHTML" | while read template ; do
         review_suffix=".html"
-        parse_template "${template}"
+        parse_template "${template}" || continue;
         echo -n "${parsed_template}" > "${review_name}${review_suffix}"
         trace "File '${review_name}${review_suffix}' generated from template '${template}'."
     done
@@ -422,11 +422,10 @@ subcommandaction_patch_make() {
     patch_diff=`git diff --name-status ${patch_from}..${patch_to}`
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     trace "${patch_diff}"
-    echo "${patch_diff}" > ${patch_name}.log
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
-    for template in "$GITXFLOW_TEMPLATE_PATCHMAKE"; do
+    echo "$GITXFLOW_TEMPLATE_PATCHMAKE" | while read template ; do
         patch_suffix=""
-        parse_template ${template}
+        parse_template ${template} || continue;
         echo -n "${parsed_template}" > ${patch_name}${patch_suffix}
         trace "File '${patch_name}${patch_suffix}' generated from template '${template}'."
     done

@@ -70,14 +70,18 @@ assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line
 # Loads settings that can be overridden using git config
 gitxflow_load_settings() {
     export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get gitxflow.template.reviewhtml)"
-    export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get gitxflow.template.patchmake)"
+	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get-all gitxflow.template.reviewhtml)"
+    export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get-all gitxflow.template.patchmake)"
 }
 
 # Save settings that can be overridden using git config
 gitxflow_save_settings() {
-    assertok "git config gitxflow.template.reviewhtml templates/reviewhtml"
-    assertok "git config gitxflow.template.patchmake templates/patchmake-sh template/patchmake-cmd"
+    assertok "git config --remove-section gitxflow.template"
+    assertok "git config --add gitxflow.template.reviewhtml templates/reviewhtml"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake-log"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake-zip"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake-sh"
+    assertok "git config --add gitxflow.template.patchmake templates/patchmake-cmd"
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <filename>'
@@ -93,7 +97,10 @@ parse_template() {
     elif [ -f "${DOT_GIT_DIR}/../${template_name}" ] ; then
         template_file="${DOT_GIT_DIR}/../${template_name}"
     fi
-    [ -f "${template_file}" ] || die "Cannot find template file '${template_file}'."
+    if [ ! -f "${template_file}" ] ; then
+        warn "Cannot find template file for template '$1'."
+        return 1;
+    fi
     parsed_template="$(<${template_file})"
     while [[ "$parsed_template" =~ (<%=[[:blank:]]*([^%[:blank:]]*)[[:blank:]]*%>) ]] ; do
         lhs="${BASH_REMATCH[1]}"
