@@ -274,7 +274,7 @@ action_review() {
     end
 }
 
-# Called by: 'git xflow <subcommand> review <optional: name>'
+# Called by: 'git xflow <subcommand> patch <optional: name>'
 action_patch() {
     require_argument "subcommand" "$subcommand"
     [ -z "$name" ] && branch_to="${subcommand}" || branch_to="${subcommand}/${name}"
@@ -437,7 +437,7 @@ subcommandaction_patch_make() {
         parse_template "${template}" "${patch_name}" ""
     done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
-    end "Successfully built patch '${patch_name}'."
+    end
 }
 
 # Called by: 'git xflow patch tags <optional: from> <optional: to>'
