@@ -61,6 +61,9 @@ die() { warn "${LIGHT_RED}$@"; exit 1; }
 # Ends the execution, and displays a last message ($@ if set, 'Done.' otherwise)
 end() { [ -z "$@" ] && echo -e "${GREEN}Done.${NC}" || echo -e "${GREEN}$@${NC}"; exit 0; }
 
+# Displays question message $@ in light purple
+question() { echo -en "${LIGHT_PURPLE}$@${NC}"; }
+
 # Ends the execution if given argument $1 is empty and displays usage of subcommand $2, or global usage if $2 is empty
 require_argument() { [ -z "$(eval "echo \$$1")" ] && usage $2 && echo && die "Missing <$1> argument !"; }
 
@@ -70,26 +73,26 @@ assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line
 # Loads settings that can be overridden using git config
 gitxflow_load_settings() {
     export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get-all gitxflow.template.reviewhtml)"
-    export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get-all gitxflow.template.patchmake)"
+	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get-all gitxflow.template.review)"
+    export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get-all gitxflow.template.patch)"
     export STAGING_BRANCH="$(git config --get gitflow.branch.staging)"
     export FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
     export RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
     export HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
 }
 
-# Save settings that can be overridden using git config
-gitxflow_save_settings() {
+# Save default settings that can be overridden using git config
+gitxflow_save_default_settings() {
     git config --remove-section gitxflow.branch
     assertok "git config --add gitxflow.branch.staging staging"
     git config --remove-section gitxflow.template
-    assertok "git config --add gitxflow.template.reviewhtml templates/reviewhtml/default"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/log"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/zip"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/sh"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/cmd"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/tar"
-    assertok "git config --add gitxflow.template.patchmake templates/patchmake/targz"
+    assertok "git config --add gitxflow.template.review templates/revie/html"
+    assertok "git config --add gitxflow.template.patch templates/patch/log"
+    assertok "git config --add gitxflow.template.patch templates/patch/zip"
+    assertok "git config --add gitxflow.template.patch templates/patch/sh"
+    assertok "git config --add gitxflow.template.patch templates/patch/cmd"
+    assertok "git config --add gitxflow.template.patch templates/patch/tar"
+    assertok "git config --add gitxflow.template.patch templates/patch/targz"
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'

@@ -170,7 +170,27 @@ subcommand_help() {
 
 # Called by: 'git xflow init'
 subcommand_init() {
-    gitxflow_save_settings
+    # Cleaning previous settings
+    git config --remove-section gitxflow.branch 2>/dev/null
+    git config --remove-section gitxflow.template 2>/dev/null
+    # Staging branch configuration
+    question "Staging branch [staging]: "
+    read branch
+    [ -z "$branch" ] && branch="staging"
+    git config gitxflow.branch.staging "$branch" && info "Staging branch selected: '$branch'." || die "Error: $? at $LINENO."
+    # Template selection
+    question "Select your templates for 'git xflow <branch> review': "
+    trace "([0] to exit)"
+    select tpl in "${GITXFLOW_DIR}/templates/review"/*; do
+        [ -f "$tpl" ] || break;
+        git config --path --add gitxflow.template.review "$tpl" && info "Review template added: '$tpl'." || die "Error: $? at $LINENO."
+    done
+    question "Select your templates for 'git xflow patch': "
+    trace "([0] to exit)"
+    select tpl in "${GITXFLOW_DIR}/templates/patch"/*; do
+        [ -f "$tpl" ] || break;
+        git config --path --add gitxflow.template.patch "$tpl" && info "Patch template added: '$tpl'." || die "Error: $? at $LINENO."
+    done
     end
 }
 
