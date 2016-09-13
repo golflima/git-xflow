@@ -56,7 +56,8 @@ usage() {
             echo "    close <name>        Finish and push feature <name> to $ORIGIN."
             echo "    cancel <name>       Delete feature <name> from local and $ORIGIN."
             echo "    log <name>          Display commits history of feature <name> from $ORIGIN."
-            echo "    review <name>       Review changes between feature <name> and $DEVELOP_BRANCH." ;;
+            echo "    review <name>       Review changes between feature <name> and $DEVELOP_BRANCH."
+            echo "    patch  <name>       Build a diff-patch from $DEVELOP_BRANCH to feature <name>." ;;
         staging)
             echo "Usage: git xflow staging <action>"
             echo
@@ -67,14 +68,16 @@ usage() {
             echo "    reset <name>        Reset $STAGING_BRANCH branch to feature <name>."
             echo "    pull                Pull $STAGING_BRANCH from $ORIGIN."
             echo "    log                 Display commits history of $STAGING_BRANCH from $ORIGIN."
-            echo "    review              Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH." ;;
+            echo "    review              Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH."
+            echo "    patch               Build a diff-patch from $DEVELOP_BRANCH to $STAGING_BRANCH." ;;
         develop)
             echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
             echo "    merged              Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
             echo "    log                 Display commits history of $DEVELOP_BRANCH from $ORIGIN."
-            echo "    review              Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH." ;;
+            echo "    review              Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH."
+            echo "    patch               Build a diff-patch from $MASTER_BRANCH to $DEVELOP_BRANCH." ;;
         release)
             echo "Usage: git xflow release <action>"
             echo
@@ -84,7 +87,8 @@ usage() {
             echo "    close <name>        Finish and push release <name> to $ORIGIN."
             echo "    cancel <name>       Delete release <name> from local and $ORIGIN."
             echo "    log <name>          Display commits history of release <name> from $ORIGIN."
-            echo "    review <name>       Review changes between release <name> and $MASTER_BRANCH." ;;
+            echo "    review <name>       Review changes between release <name> and $MASTER_BRANCH."
+            echo "    patch  <name>       Build a diff-patch from $MASTER_BRANCH to release <name>." ;;
         hotfix)
             echo "Usage: git xflow hotfix <action>"
             echo
@@ -95,7 +99,8 @@ usage() {
             echo "    close <name>        Finish and push hotfix <name> to $ORIGIN."
             echo "    cancel <name>       Delete hotfix <name> from local and $ORIGIN."
             echo "    log <name>          Display commits history of hotfix <name> from $ORIGIN."
-            echo "    review <name>       Review changes between hotfix <name> and $MASTER_BRANCH." ;;
+            echo "    review <name>       Review changes between hotfix <name> and $MASTER_BRANCH." 
+            echo "    patch <name>        Build a diff-patch from $MASTER_BRANCH to hotfix <name>." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo
@@ -269,6 +274,15 @@ action_review() {
     end
 }
 
+# Called by: 'git xflow <subcommand> review <optional: name>'
+action_patch() {
+    require_argument "subcommand" "$subcommand"
+    [ -z "$name" ] && branch_to="${subcommand}" || branch_to="${subcommand}/${name}"
+    [ -n "$(echo "$subcommand" | grep "feature\|staging")" ] && branch_from="$DEVELOP_BRANCH"
+    [ -n "$(echo "$subcommand" | grep "develop\|release\|hotfix")" ] && branch_from="$MASTER_BRANCH"
+    [ -z "$branch_from" ] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
+    subcommandaction_patch_make patch make "${branch_from}" "${branch_to}"
+}
 
 
 ##### 'feature <action>' handlers #####
