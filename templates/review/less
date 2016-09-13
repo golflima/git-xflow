@@ -1,4 +1,35 @@
-<%@
+<%#
+    
+    git-xflow -- An extension to git-flow, which automatize
+    some usual tasks related to repository operations.
+    
+    Feel free to contribute to this project at:
+       https://github.com/golflima/git-xflow
+    git-flow : http://github.com/nvie/gitflow
+    
+    Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
+    
+    This file is part of git-xflow.
+    
+    git-xflow is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    git-xflow is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    
+    You should have received a copy of the GNU Lesser General Public License
+    along with git-xflow. If not, see <http://www.gnu.org/licenses/>
+    
+#%><%#
+
+    This template is used when 'git xflow <branch> review' is called.
+    It generates shell output with less containing all differences between reviewed objects.
+
+#%><%@
     generated_file_name=""      # Disable the file output
     generated_file_suffix=""    # Disable the file output
     echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \

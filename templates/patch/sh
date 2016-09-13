@@ -1,34 +1,44 @@
-#!/bin/bash
-# 
-# git-xflow -- An extension to git-flow, which automatize
-# some usual tasks related to repository operations.
-#
-# Feel free to contribute to this project at:
-#    https://github.com/golflima/git-xflow
-# git-flow : http://github.com/nvie/gitflow
-#
-# Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
-#
-# This file is part of git-xflow.
-#
-# git-xflow is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# git-xflow is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-# 
-# You should have received a copy of the GNU Lesser General Public License
-# along with git-xflow. If not, see <http://www.gnu.org/licenses/>
+<%#
+    
+    git-xflow -- An extension to git-flow, which automatize
+    some usual tasks related to repository operations.
+    
+    Feel free to contribute to this project at:
+       https://github.com/golflima/git-xflow
+    git-flow : http://github.com/nvie/gitflow
+    
+    Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
+    
+    This file is part of git-xflow.
+    
+    git-xflow is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    git-xflow is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+    
+    You should have received a copy of the GNU Lesser General Public License
+    along with git-xflow. If not, see <http://www.gnu.org/licenses/>
+    
+#%><%#
+
+    This template is used when 'git xflow patch make <from> <to>' is called.
+    It generates a .sh file for UNIX shell to apply the patch (it requires zip and log templates too).
+
+#%>#!/bin/bash
+
+
 
 ############## Installer configuration ##############
 
 NAME="<%= patch_name %>" <%# Gets the name of the patch, to retrieve all its related files #%>
 GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>" <%# Gets the version of git-xflow used to generated the patch #%>
 <%@ generated_file_suffix="_install.sh" %> <%# Adds a specific suffix to the name of the generated file #%>
+
 
 
 ############## Constants ##############
