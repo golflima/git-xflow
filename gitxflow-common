@@ -73,8 +73,8 @@ assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line
 # Loads settings that can be overridden using git config
 gitxflow_load_settings() {
     export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-	export GITXFLOW_TEMPLATE_REVIEWHTML="$(git config --get-all gitxflow.template.review)"
-    export GITXFLOW_TEMPLATE_PATCHMAKE="$(git config --get-all gitxflow.template.patch)"
+	export GITXFLOW_TEMPLATE_REVIEW="$(git config --get-all gitxflow.template.review)"
+    export GITXFLOW_TEMPLATE_PATCH="$(git config --get-all gitxflow.template.patch)"
     export STAGING_BRANCH="$(git config --get gitflow.branch.staging)"
     export FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
     export RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
@@ -112,7 +112,7 @@ parse_template() {
         template_file="${DOT_GIT_DIR}/../${template_name}"
     fi
     if [ ! -f "${template_file}" ] ; then
-        warn "Template file not found: '$1'."
+        warn "Template '$1': file not found."
         return 1;
     fi
     parsed_template="$(<${template_file})"
@@ -160,14 +160,18 @@ parse_template() {
         value="${BASH_REMATCH[2]}"
         eval "$value" > "${generated_file_name}${generated_file_suffix}"
         if [ $? = 0 ] ; then
-            info "File '${generated_file_name}${generated_file_suffix}' generated from template '${template}'."
+            info "Template '$1': File '${generated_file_name}${generated_file_suffix}' generated."
             return 0;
         else
             warn "Template '$1': error when evaluating to-file command tag: '$lhs'."
             return 13;
         fi
     done
-    echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
-    info "File '${generated_file_name}${generated_file_suffix}' generated from template '${template}'."
+    if [ ! -z "${generated_file_name}${generated_file_suffix}" ] ; then
+        echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
+        info "Template '$1': File '${generated_file_name}${generated_file_suffix}' generated."
+    else
+        info "Template '$1': executed."
+    fi
     return 0;
 }

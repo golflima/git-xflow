@@ -52,63 +52,58 @@ usage() {
             echo "Usage: git xflow feature <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into feature <name> on $ORIGIN."
-            echo "    close <name>         Finish and push feature <name> to $ORIGIN."
-            echo "    cancel <name>        Delete feature <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of feature <name> from $ORIGIN."
-            echo "    review <name>        Review changes between feature <name> and $DEVELOP_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between feature <name> and $DEVELOP_BRANCH in a HTML file." ;;
+            echo "    merged <name>       Check branches merged into feature <name> on $ORIGIN."
+            echo "    close <name>        Finish and push feature <name> to $ORIGIN."
+            echo "    cancel <name>       Delete feature <name> from local and $ORIGIN."
+            echo "    log <name>          Display commits history of feature <name> from $ORIGIN."
+            echo "    review <name>       Review changes between feature <name> and $DEVELOP_BRANCH." ;;
         staging)
             echo "Usage: git xflow staging <action>"
             echo
             echo "Available actions are:"
-            echo "    merge <name>    Merge feature <name> into $STAGING_BRANCH branch."
-            echo "    merged          Check branches merged into $STAGING_BRANCH on $ORIGIN."
-            echo "    reset           Reset $STAGING_BRANCH branch to develop."
-            echo "    reset <name>    Reset $STAGING_BRANCH branch to feature <name>."
-            echo "    pull            Pull $STAGING_BRANCH from $ORIGIN."
-            echo "    log             Display commits history of $STAGING_BRANCH from $ORIGIN."
-            echo "    review          Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH with less."
-            echo "    reviewhtml      Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH in a HTML file." ;;
+            echo "    merge <name>        Merge feature <name> into $STAGING_BRANCH branch."
+            echo "    merged              Check branches merged into $STAGING_BRANCH on $ORIGIN."
+            echo "    reset               Reset $STAGING_BRANCH branch to develop."
+            echo "    reset <name>        Reset $STAGING_BRANCH branch to feature <name>."
+            echo "    pull                Pull $STAGING_BRANCH from $ORIGIN."
+            echo "    log                 Display commits history of $STAGING_BRANCH from $ORIGIN."
+            echo "    review              Review changes between $STAGING_BRANCH and $DEVELOP_BRANCH." ;;
         develop)
             echo "Usage: git xflow develop <action>"
             echo
             echo "Available actions are:"
-            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
-            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN."
-            echo "    review         Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH with less."
-            echo "    reviewhtml     Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH in a HTML file." ;;
+            echo "    merged              Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
+            echo "    log                 Display commits history of $DEVELOP_BRANCH from $ORIGIN."
+            echo "    review              Review changes between $DEVELOP_BRANCH and $MASTER_BRANCH." ;;
         release)
             echo "Usage: git xflow release <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into release <name> on $ORIGIN."
-            echo "    pull <name>          Pull release <name> from $ORIGIN."
-            echo "    close <name>         Finish and push release <name> to $ORIGIN."
-            echo "    cancel <name>        Delete release <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of release <name> from $ORIGIN."
-            echo "    review <name>        Review changes between release <name> and $MASTER_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between release <name> and $MASTER_BRANCH in a HTML file." ;;
+            echo "    merged <name>       Check branches merged into release <name> on $ORIGIN."
+            echo "    pull <name>         Pull release <name> from $ORIGIN."
+            echo "    close <name>        Finish and push release <name> to $ORIGIN."
+            echo "    cancel <name>       Delete release <name> from local and $ORIGIN."
+            echo "    log <name>          Display commits history of release <name> from $ORIGIN."
+            echo "    review <name>       Review changes between release <name> and $MASTER_BRANCH." ;;
         hotfix)
             echo "Usage: git xflow hotfix <action>"
             echo
             echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into hotfix <name> on $ORIGIN."
-            echo "    publish <name>       Publish hotfix <name> to $ORIGIN."
-            echo "    pull <name>          Pull hotfix <name> from $ORIGIN."
-            echo "    close <name>         Finish and push hotfix <name> to $ORIGIN."
-            echo "    cancel <name>        Delete hotfix <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of hotfix <name> from $ORIGIN."
-            echo "    review <name>        Review changes between hotfix <name> and $MASTER_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between hotfix <name> and $MASTER_BRANCH in a HTML file." ;;
+            echo "    merged <name>       Check branches merged into hotfix <name> on $ORIGIN."
+            echo "    publish <name>      Publish hotfix <name> to $ORIGIN."
+            echo "    pull <name>         Pull hotfix <name> from $ORIGIN."
+            echo "    close <name>        Finish and push hotfix <name> to $ORIGIN."
+            echo "    cancel <name>       Delete hotfix <name> from local and $ORIGIN."
+            echo "    log <name>          Display commits history of hotfix <name> from $ORIGIN."
+            echo "    review <name>       Review changes between hotfix <name> and $MASTER_BRANCH." ;;
         master)
             echo "Usage: git xflow master <action>"
             echo
             echo "Available actions are:"
-            echo "    merged         Check branches merged into $MASTER_BRANCH on $ORIGIN."
-            echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
-            echo "    pull <name>    Pull tag <name> from $ORIGIN."
-            echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
+            echo "    merged              Check branches merged into $MASTER_BRANCH on $ORIGIN."
+            echo "    pull                Pull $MASTER_BRANCH HEAD from $ORIGIN."
+            echo "    pull <name>         Pull tag <name> from $ORIGIN."
+            echo "    log                 Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
         patch)
             echo "Usage: git xflow patch <action>"
             echo
@@ -122,25 +117,25 @@ usage() {
             echo "Usage: git xflow version <action>"
             echo
             echo "Available actions are:"
-            echo "    show           Show version of git-xflow."
-            echo "    check          Check for updates of git-xflow."
-            echo "    update         Update git-xflow to latest available version." ;;
+            echo "    show                Show version of git-xflow."
+            echo "    check               Check for updates of git-xflow."
+            echo "    update              Update git-xflow to latest available version." ;;
         *)
             echo "Usage: git xflow [--nogf] <subcommand>"
             echo
             echo "Available subcommands are:"
-            echo "    feature    Manage feature branches."
-            echo "    staging    Manage staging branch."
-            echo "    develop    Manage $DEVELOP_BRANCH branch."
-            echo "    release    Manage release branches."
-            echo "    hotfix     Manage hotfix branches."
-            echo "    master     Manage $MASTER_BRANCH branch."
-            echo "    patch      Build and apply patches."
-            echo "    help       Show help information."
-            echo "    version    Show version information and check for updates."
+            echo "    feature             Manage feature branches."
+            echo "    staging             Manage staging branch."
+            echo "    develop             Manage $DEVELOP_BRANCH branch."
+            echo "    release             Manage release branches."
+            echo "    hotfix              Manage hotfix branches."
+            echo "    master              Manage $MASTER_BRANCH branch."
+            echo "    patch               Build and apply patches."
+            echo "    help                Show help information."
+            echo "    version             Show version information and check for updates."
             echo
             echo "Available options are:"
-            echo "    --nogf     Disable call to git-flow when unknown subcommand is given."
+            echo "    --nogf              Disable call to git-flow when unknown subcommand is given."
             echo
             echo "Try 'git xflow help <subcommand>' for details." ;;
     esac
@@ -263,31 +258,15 @@ action_review() {
     [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
-    echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \
-        git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
-        git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
-        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
-    end
-}
-
-# Called by: 'git xflow <subcommand> reviewhtml <optional: name>'
-action_reviewhtml() {
-    require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo $subcommand | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo $subcommand | grep "develop\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
     TAB=$'\t';LN=$'\n' # Fix for old version of 'sed' (Mac OS X ...)
     review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
-    echo "$GITXFLOW_TEMPLATE_REVIEWHTML" | while read template ; do
-        parse_template "${template}" "${review_name}" ".html"
+    echo "$GITXFLOW_TEMPLATE_REVIEW" | while read template ; do
+        parse_template "${template}" "${review_name}" ""
     done
-    end "Review successfully saved."
+    end
 }
 
 
@@ -440,7 +419,7 @@ subcommandaction_patch_make() {
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     trace "${patch_diff}"
     assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
-    echo "$GITXFLOW_TEMPLATE_PATCHMAKE" | while read template ; do
+    echo "$GITXFLOW_TEMPLATE_PATCH" | while read template ; do
         parse_template "${template}" "${patch_name}" ""
     done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."

@@ -1,0 +1,8 @@
+<%@
+    generated_file_name=""      # Disable the file output
+    generated_file_suffix=""    # Disable the file output
+    echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \
+        git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
+        git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
+%>
