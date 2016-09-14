@@ -494,7 +494,8 @@ subcommandaction_version_check() {
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
     echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... ${BROWN}"
-    echo -e "v`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/$name/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`${NC}"
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    echo -e "v${official_version}${NC}"
     [ -z "$name" ] && name="master"
     rm -rf "${GITXFLOW_DIR}/update"
     mkdir "${GITXFLOW_DIR}/update"
