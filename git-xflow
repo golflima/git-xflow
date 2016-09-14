@@ -500,8 +500,8 @@ subcommandaction_version_update() {
     mkdir "${GITXFLOW_DIR}/update"
     curl -L -s "https://github.com/golflima/git-xflow/archive/$name.zip" > "${GITXFLOW_DIR}/update/$name.zip"
     unzip -uqq "${GITXFLOW_DIR}/update/$name.zip" -d "${GITXFLOW_DIR}/update"
-    install -v -m 0755 "${GITXFLOW_DIR}/update/git-xflow-$name/git-xflow" "${GITXFLOW_DIR}"
-    install -v -m 0644 -d "${GITXFLOW_DIR}/update/git-xflow-$name" "${GITXFLOW_DIR}"
+    cp -r "${GITXFLOW_DIR}/update/git-xflow-$name/*" "${GITXFLOW_DIR}"
+    install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-$name/git-xflow" "${GITXFLOW_DIR}"
     end
 }
 
