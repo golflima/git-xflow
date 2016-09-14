@@ -518,6 +518,9 @@ subcommand="$1"
 action="$2"
 name="$3"
 
+gitxflow_is_initialized
+[ $? = 0 -o "${subcommand}" = "init" ] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
+
 [ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} $*
 [ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
 [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} $*

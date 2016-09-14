@@ -75,10 +75,16 @@ gitxflow_load_settings() {
     export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
 	export GITXFLOW_TEMPLATE_REVIEW="$(git config --get-all gitxflow.template.review)"
     export GITXFLOW_TEMPLATE_PATCH="$(git config --get-all gitxflow.template.patch)"
-    export STAGING_BRANCH="$(git config --get gitflow.branch.staging)"
+    export STAGING_BRANCH="$(git config --get gitxflow.branch.staging)"
     export FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
     export RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
     export HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
+}
+
+gitxflow_is_initialized() {
+    [ "${STAGING_BRANCH}" != "" ] \
+    && [ "${GITXFLOW_TEMPLATE_REVIEW}" != "" ] \
+    && [ "${GITXFLOW_TEMPLATE_PATCH}" != "" ]
 }
 
 # Save default settings that can be overridden using git config
