@@ -493,13 +493,17 @@ subcommandaction_version_check() {
 
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
-    echo -n "Upgrading git-xflow from v$GITXFLOW_VERSION to ... "
+    echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... ${BROWN}"
+    echo -e "v$(curl -s "https://raw.githubusercontent.com/golflima/git-xflow/$name/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}')${NC}"
     [ -z "$name" ] && name="master"
-    update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/$name/git-xflow"`
-    update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
-    echo -n "v${update_version} ... "
-    echo -n "${update_content}" > "$GITXFLOW_DIR/git-xflow" && end "Success" || die "Failed to replace git-xflow file"
+    rm -rf "${GITXFLOW_DIR}/update"
+    mkdir "${GITXFLOW_DIR}/update"
+    curl -L -s "https://github.com/golflima/git-xflow/archive/$name.zip" > "${GITXFLOW_DIR}/update/$name.zip"
+    unzip -uqq "${GITXFLOW_DIR}/update/$name.zip" -d "${GITXFLOW_DIR}/update"
+    install -v -m 0644 "${GITXFLOW_DIR}/update/git-xflow-$name" "${GITXFLOW_DIR}"
+    install -v -m 0755 "${GITXFLOW_DIR}/update/git-xflow-$name/git-xflow" "${GITXFLOW_DIR}"
+    rm -rf "${GITXFLOW_DIR}/update"
+    end
 }
 
 
