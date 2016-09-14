@@ -452,7 +452,7 @@ subcommandaction_patch_tags() {
 # Called by: 'git xflow patch showtags'
 subcommandaction_patch_showtags() {
     info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
-    echo -e "$(git tag | nl | sed -e 's/^\([[:blank:]]*\)\([0-9]*\)\([[:blank:]]\)*\(.*\)$/\1'"${LIGHT_BLUE}"'\2'"${DARK_GRAY}"'\3'"${NC}"'/g')"
+    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
     end
 }
 
