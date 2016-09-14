@@ -493,16 +493,20 @@ subcommandaction_version_check() {
 
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
-    echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... ${BROWN}"
+    echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... "
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    echo -e "v${official_version}${NC}"
+    echo -e "v${BROWN}${official_version}${NC}"
     [ -z "$name" ] && name="master"
+    rm -rf "${GITXFLOW_DIR}/backup"
+    cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}/backup"
+    trace "Currently installed version backuped to: '${GITXFLOW_DIR}/backup'."
     rm -rf "${GITXFLOW_DIR}/update"
     mkdir "${GITXFLOW_DIR}/update"
     curl -L -s "https://github.com/golflima/git-xflow/archive/$name.zip" > "${GITXFLOW_DIR}/update/$name.zip"
     unzip -uqq "${GITXFLOW_DIR}/update/$name.zip" -d "${GITXFLOW_DIR}/update"
     cp -rf "${GITXFLOW_DIR}/update/git-xflow-$name/." "${GITXFLOW_DIR}"
     install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-$name/git-xflow" "${GITXFLOW_DIR}"
+    trace "New version installed to: '${GITXFLOW_DIR}'."
     rm -rf "${GITXFLOW_DIR}/update"
     end
 }
