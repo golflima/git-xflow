@@ -500,6 +500,7 @@ subcommandaction_version_update() {
     rm -rf "${GITXFLOW_DIR}/backup"
     cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}/backup"
     trace "Currently installed version backuped to: '${GITXFLOW_DIR}/backup'."
+    rm -f "${GITXFLOW_DIR}/*"
     rm -rf "${GITXFLOW_DIR}/update"
     mkdir "${GITXFLOW_DIR}/update"
     curl -L -s "https://github.com/golflima/git-xflow/archive/$name.zip" > "${GITXFLOW_DIR}/update/$name.zip"
