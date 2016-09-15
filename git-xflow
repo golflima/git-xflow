@@ -530,6 +530,13 @@ name="$3"
 gitxflow_is_initialized
 [ $? = 0 -o "${subcommand}" = "init" ] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
 
+hookname="${DOT_GIT_DIR}/hooks/git-xflow-${subcommand}-${action}"
+if [ -f "${hookname}" ] ; then
+    echo -en "${DARK_GRAY}Running hook: '${hookname}' ... ${NC}"
+    (. "${hookname}") || die "Failed ! (exit code: $?)"
+    trace "OK"
+fi
+
 [ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} $*
 [ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
 [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} $*
