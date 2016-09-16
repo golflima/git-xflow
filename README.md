@@ -38,9 +38,8 @@ Install git-xflow
 1. [Install git-flow](https://github.com/nvie/gitflow/wiki/Installation)
 2. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) git-xflow, then unzip files ...
 3. Put files into a PATH listed folded ([see details for Windows and Linux](https://en.wikipedia.org/wiki/PATH_(variable)))
-4. For Linux only, make files executables with:
+4. For Linux only, make *gix-flow* file executable with:
    * `chmod +x git-xflow`
-   * `chmod +x gitflow-common`
 5. Test it, type in a terminal : `git xflow`
 
 *NB : File `gitflow-common` is taken from [git-flow](https://raw.githubusercontent.com/nvie/gitflow/develop/gitflow-common) directly,
