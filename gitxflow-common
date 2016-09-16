@@ -70,17 +70,17 @@ question() { echo -en "${LIGHT_PURPLE}$@${NC}"; }
 require_argument() { [[ -z "$(eval "echo \$$1")" ]] && usage $2 && echo && die "Missing <$1> argument !"; }
 
 # Ends the execution if given command $1 returns an error and displays debug information. Usage: 'assertok "command" $LINENO'
-assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"; }
+assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v${GITXFLOW_VERSION}, line $2, following command failed (err: $?):" && die "$1"; }
 
 # Loads settings that can be overridden using git config
 gitxflow_load_settings() {
-    export REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-	export GITXFLOW_TEMPLATE_REVIEW="$(git config --get-all gitxflow.template.review)"
-    export GITXFLOW_TEMPLATE_PATCH="$(git config --get-all gitxflow.template.patch)"
-    export STAGING_BRANCH="$(git config --get gitxflow.branch.staging)"
-    export FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
-    export RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
-    export HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
+    readonly REPOSITORY_NAME="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+	readonly GITXFLOW_TEMPLATE_REVIEW="$(git config --get-all gitxflow.template.review)"
+    readonly GITXFLOW_TEMPLATE_PATCH="$(git config --get-all gitxflow.template.patch)"
+    readonly STAGING_BRANCH="$(git config --get gitxflow.branch.staging)"
+    readonly FEATURE_PREFIX="$(git config --get gitflow.prefix.feature)"
+    readonly RELEASE_PREFIX="$(git config --get gitflow.prefix.release)"
+    readonly HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
 }
 
 gitxflow_is_initialized() {
@@ -125,53 +125,53 @@ parse_template() {
     fi
     parsed_template="$(<${template_file})"
     # Handle variable tags: '<%= variablename %>'
-    while [[ "$parsed_template" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*).*%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*).*%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\${$value}\"")"
         if [[ $? != 0 ]]; then
-            warn "Template '$1': error when evaluating variable tag: '$lhs'."
+            warn "Template '$1': error when evaluating variable tag: '${lhs}'."
             return 10;
         fi
-        parsed_template="${parsed_template//"$lhs"/"$rhs"}"
+        parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle not echoed command tags: '<%@ command %>'
-    while [[ "$parsed_template" =~ (<%@([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%@([^%]*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
-        eval "$value"
+        eval "${value}"
         if [[ $? != 0 ]]; then
-            warn "Template '$1': error when evaluating not echoed command tag: '$lhs'."
+            warn "Template '$1': error when evaluating not echoed command tag: '${lhs}'."
             return 11;
         fi
-        parsed_template="${parsed_template//"$lhs"/}"
+        parsed_template="${parsed_template//"${lhs}"/}"
     done
     # Handle comment tags: '<%# comment #%>'
-    while [[ "$parsed_template" =~ (<%#([^#]*)#%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%#([^#]*)#%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
-        parsed_template="${parsed_template//"$lhs"/}"
+        parsed_template="${parsed_template//"${lhs}"/}"
     done
     # Handle echoed command tags: '<%$ command %>'
-    while [[ "$parsed_template" =~ (<%\$([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%\$([^%]*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
-        rhs="$(eval "$value")"
+        rhs="$(eval "${value}")"
         if [[ $? != 0 ]]; then
-            warn "Template '$1': error when evaluating echoed command tag: '$lhs'."
+            warn "Template '$1': error when evaluating echoed command tag: '${lhs}'."
             return 12;
         fi
-        parsed_template="${parsed_template//"$lhs"/"$rhs"}"
+        parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle to-file command tags: '<%: command %>'
-    while [[ "$parsed_template" =~ (<%:([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%:([^%]*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
-        eval "$value" > "${generated_file_name}${generated_file_suffix}"
+        eval "${value}" > "${generated_file_name}${generated_file_suffix}"
         if [[ $? = 0 ]]; then
             info "Template '$1': File '${generated_file_name}${generated_file_suffix}' generated."
             return 0;
         else
-            warn "Template '$1': error when evaluating to-file command tag: '$lhs'."
+            warn "Template '$1': error when evaluating to-file command tag: '${lhs}'."
             return 13;
         fi
     done
