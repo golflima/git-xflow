@@ -524,7 +524,7 @@ subcommandaction_version_update() {
 
 main() {
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common.sh"
+    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
     gitflow_load_settings
     require_gitflow_initialized
 
