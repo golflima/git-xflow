@@ -1,4 +1,3 @@
-#!/bin/bash
 # 
 # git-xflow -- An extension to git-flow, which automatize
 # some usual tasks related to repository operations.
@@ -47,6 +46,7 @@ TAB=$'\t';                  LF=$'\n'
 
 # Displays trace information message $@ in dark gray
 trace() { echo -e "${DARK_GRAY}$@${NC}"; }
+debug() { has_flag "debug" && trace "$1"; }
 
 # Displays information message $@ in light blue
 info() { echo -e "${LIGHT_BLUE}$@${NC}"; }
@@ -71,6 +71,23 @@ require_argument() { [[ -z "$(eval "echo \$$1")" ]] && usage $2 && echo && die "
 
 # Ends the execution if given command $1 returns an error and displays debug information. Usage: 'assertok "command" $LINENO'
 assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v${GITXFLOW_VERSION}, line $2, following command failed (err: $?):" && die "$1"; }
+
+remove_color() {
+    NC=; 
+    BLACK=;         DARK_GRAY=;
+    RED=;           LIGHT_RED=;
+    GREEN=;         LIGHT_GREEN=;
+    BROWN=;         YELLOW=;
+    BLUE=;          LIGHT_BLUE=;
+    PURPLE=;        LIGHT_PURPLE=;
+    CYAN=;          LIGHT_CYAN=;
+    LIGHT_GRAY=;    WHITE=;
+}
+
+# convenience functions for checking shFlags flags
+get_flag() { local flag; flag="FLAGS_$1"; echo -n "$(eval "echo -n \${${flag}}")"; }
+has_flag() { [[ "$(get_flag "$1")" = "${FLAGS_TRUE}" ]]; }
+hasnt_flag() { [[ "$(get_flag "$1")" != "${FLAGS_TRUE}" ]]; }
 
 has_option() {
     [[ -z "$1" ]] && die "Missing option name."

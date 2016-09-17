@@ -523,6 +523,9 @@ subcommandaction_version_update() {
 # 4. If no suitable handler is found, try to call git-flow or exit
 
 main() {
+    # Import shFlags functions
+    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+
     # Import common functions of git-flow, and require git-flow to be initialized
     . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
     gitflow_load_settings
@@ -532,12 +535,26 @@ main() {
     . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
     gitxflow_load_settings
 
-    [[ $# < 1 ]] && usage && exit 1
-    [[ "$1" = "--nogf" ]] && disable_gitflow_proxy=yes && shift
+    [[ $# = 0 ]] && usage && exit 1;
 
-    readonly subcommand="$1"
-    readonly action="$2"
-    readonly name="$3"
+    # Load generic flags for git-xflow
+    DEFINE_boolean 'no-gitflow-forward' false 'Disable forward of unrecognized commands to gitflow' 'g'
+    DEFINE_boolean 'no-color' false 'Disable colored output' 'c'
+    DEFINE_boolean 'debug' false 'Show debug information' 'd'
+
+    # Load command flags for git-xflow
+    DEFINE_string 'subcommand' "$1" 'git xflow <subcommand> <action> <name>' 's'
+    DEFINE_string 'action' "$2" 'git xflow <subcommand> <action> <name>' 'a'
+    DEFINE_string 'name' "$3" 'git xflow <subcommand> <action> <name>' 'n'
+
+    # parse the command-line
+    FLAGS "$@" || die "Cannot parse command-line !"
+    has_flag debug && FLAGS_show_commands="${FLAGS_TRUE}"
+    has_flag no_color && remove_color
+
+    readonly subcommand="$(get_flag "subcommand")"
+    readonly action="$(get_flag "action")"
+    readonly name="$(get_flag "name")"
 
     gitxflow_is_initialized
     [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
@@ -553,7 +570,7 @@ main() {
     [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${name}" $*
     [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} $*
 
-    if [[ "$disable_gitflow_proxy" = "yes" ]]; then
+    if has_flag no_gitflow_forward; then
         die "Not supported operation. Try 'git xflow help'."
     else
         warn "Operation not supported by git-xflow ('git xflow help'), trying with vanilla git-flow ..."
