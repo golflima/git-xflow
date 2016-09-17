@@ -524,12 +524,12 @@ subcommandaction_version_update() {
 
 main() {
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/gitflow-common"
+    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common.sh"
     gitflow_load_settings
     require_gitflow_initialized
 
     # Import common functions of git-xflow, and load its settings
-    . "${GITXFLOW_DIR}/gitxflow-common"
+    . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
     gitxflow_load_settings
 
     [[ $# < 1 ]] && usage && exit 1
