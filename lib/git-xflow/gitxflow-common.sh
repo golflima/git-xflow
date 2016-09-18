@@ -86,6 +86,8 @@ remove_color() {
 
 # convenience functions for checking shFlags flags
 get_flag() { local flag; flag="FLAGS_$1"; echo -n "$(eval "echo -n \${${flag}}")"; }
+set_flag() { local flag; flag="FLAGS_$1"; eval "\${${flag}}=\"$2\""; }
+empty_flag() { [[ -z "$(get_flag "$1")" ]]; }
 has_flag() { [[ "$(get_flag "$1")" = "${FLAGS_TRUE}" ]]; }
 hasnt_flag() { [[ "$(get_flag "$1")" != "${FLAGS_TRUE}" ]]; }
 
@@ -146,13 +148,14 @@ gitxflow_save_default_settings() {
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
 parse_template() {
+    [[ -z "$1" ]] && die "Missing templates path."
     [[ -z "$1" ]] && die "Missing template name."
     [[ -z "$2" ]] && die "Missing default generated file name."
     local template_name generated_file_name generated_file_suffix template_file lhs value rhs parsed_template
     template_name="$1"
     generated_file_name="$2"
     generated_file_suffix="$3"
-    template_file="${GITXFLOW_DIR}/${template_name}"
+    template_file="${GITXFLOW_DIR}/templates/${template_name}"
     if [[ -f "${template_name}" ]]; then
         template_file="${template_name}"
     elif [[ -f "${DOT_GIT_DIR}/${template_name}" ]]; then
