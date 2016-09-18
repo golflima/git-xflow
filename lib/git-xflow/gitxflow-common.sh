@@ -73,15 +73,9 @@ require_argument() { [[ -z "$(eval "echo \$$1")" ]] && usage $2 && echo && die "
 assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v${GITXFLOW_VERSION}, line $2, following command failed (err: $?):" && die "$1"; }
 
 remove_color() {
-    NC=; 
-    BLACK=;         DARK_GRAY=;
-    RED=;           LIGHT_RED=;
-    GREEN=;         LIGHT_GREEN=;
-    BROWN=;         YELLOW=;
-    BLUE=;          LIGHT_BLUE=;
-    PURPLE=;        LIGHT_PURPLE=;
-    CYAN=;          LIGHT_CYAN=;
-    LIGHT_GRAY=;    WHITE=;
+    NC=; BLACK=; DARK_GRAY=; RED=; LIGHT_RED=; GREEN=; LIGHT_GREEN=;
+    BROWN=; YELLOW=; BLUE=; LIGHT_BLUE=; PURPLE=; LIGHT_PURPLE=;
+    CYAN=; LIGHT_CYAN=; LIGHT_GRAY=; WHITE=;
 }
 
 # convenience functions for checking shFlags flags
