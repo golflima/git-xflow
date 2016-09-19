@@ -162,7 +162,7 @@ parse_template() {
         warn "Template '${template_name}': file not found."
         return 1;
     fi
-    parsed_template="$(<${template_file})"
+    parsed_template="$(<"${template_file}")"
     # Handle variable tags: '<%= variablename %>'
     while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*).*%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
@@ -221,4 +221,19 @@ parse_template() {
         info "Template '${template_name}': executed."
     fi
     return 0;
+}
+
+# Disable flags_help() function of shFlags
+flags_help() { return 0; }
+
+help() {
+    trace "Help ! 'git xflow $1 $2 $3'"
+    local help_file help_content
+    help_file="${GITXFLOW_DIR}/docs/Command-line Reference.md"
+    [[ -f "${help_file}" ]] || die "Cannot locate help file: '${help_file}'."
+    help_content="$(<"${help_file}")"
+    [[ "${help_content}" =~ .*##[[:blank:]]*git[[:blank:]]*xflow[[:blank:]]*$1([[:blank:]]*$2)?([^#]*)## ]] || return 1;
+    help_content="${BASH_REMATCH[2]}"
+    echo "${help_content}"
+    end
 }

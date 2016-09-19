@@ -465,7 +465,7 @@ subcommandaction_patch_apply() {
     info "Applying patch ${name} ..."
     [[ -f "${name}.log" ]] || die "File '${name}.log' not found"
     [[ -f "${name}.zip" ]] || die "File '${name}.zip' not found"
-    patch_diff="$(<${name}.log)"
+    patch_diff="$(<"${name}.log")"
     trace "${patch_diff}"
     info "Copying new and modified files ..."
     assertok "unzip ${name}.zip" ${LINENO}
@@ -543,7 +543,9 @@ main() {
     # Load generic flags for git-xflow
     DEFINE_boolean 'no-gitflow-forward' false 'Disable forward of unrecognized commands to gitflow' 'g'
     DEFINE_boolean 'no-color' false 'Disable colored output' 'c'
-    DEFINE_boolean 'debug' false 'Show debug information' 'd'
+    DEFINE_boolean 'verbose' false 'Show more information' 'v'
+    DEFINE_boolean 'license' false 'Show license' 'l'
+    DEFINE_boolean 'help' false 'Show help' 'h'
 
     # Load command flags for git-xflow
     DEFINE_string 'subcommand' "$1" 'git xflow <subcommand> <action> <name>' 's'
@@ -556,12 +558,15 @@ main() {
 
     # parse the command-line
     FLAGS "$@" || die "Cannot parse command-line !"
+    has_flag license && less "${GITXFLOW_DIR}/LICENSE" && end;
     has_flag debug && FLAGS_show_commands="${FLAGS_TRUE}"
     has_flag no_color && remove_color
 
     readonly subcommand="$(get_flag "subcommand")"
     readonly action="$(get_flag "action")"
     readonly name="$(get_flag "name")"
+
+    has_flag help && help "${subcommand}" "${action}" "${name}" && end;
 
     gitxflow_is_initialized
     [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
