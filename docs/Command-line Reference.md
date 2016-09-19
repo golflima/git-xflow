@@ -1,9 +1,11 @@
 # git-xflow Command-line Reference
 
-git-xflow, Copyright (C) 2016, Jérémy WALTHER (jeremy.walther@golflima.net)
-This program comes with ABSOLUTELY NO WARRANTY; for details type `git xflow -l`.
-This is free software, and you are welcome to redistribute it
-under certain conditions; type `git xflow -l` for details.
+> git-xflow, Copyright (C) 2016, Jérémy WALTHER (jeremy.walther@golflima.net)
+>
+> This program comes with ABSOLUTELY NO WARRANTY; for details type `git xflow -l`.
+>
+> This is free software, and you are welcome to redistribute it
+> under certain conditions; type `git xflow -l` for details.
 
 
 
