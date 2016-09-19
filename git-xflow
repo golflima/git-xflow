@@ -569,7 +569,7 @@ main() {
     readonly hookname="${DOT_GIT_DIR}/git-xflow/hooks/${subcommand}-${action}"
     if [[ -f "${hookname}" ]]; then
         echo -en "${DARK_GRAY}Running hook: '${hookname}' ... ${NC}"
-        (. "${hookname}" "$@") || die "Failed ! (exit code: $?)"
+        sh "${hookname}" "$@" || die "Failed ! (exit code: $?)"
         trace "OK"
     fi
 
