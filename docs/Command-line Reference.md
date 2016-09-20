@@ -9,7 +9,7 @@ Usage: `git xflow SUBCOMMAND ACTION [NAME] [OPTION]`
 Available SUBCOMMANDs are:
 
 * `feature`         : Manage feature branches.
-* `staging`         : Manage staging branch.
+* `staging`         : Manage *staging* branch.
 * `develop`         : Manage *develop* branch.
 * `release`         : Manage release branches.
 * `hotfix`          : Manage hotfix branches.
