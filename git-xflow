@@ -388,10 +388,10 @@ subcommandaction_version_check() {
 
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
-    local official_version name
+    local official_version version
     echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... "
-    [[ -z "${name}" ]] && name="master"
-    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/${name}/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    [[ -z "${name}" ]] && version="master"
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/${version}/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
     echo -e "v${BROWN}${official_version}${NC}"
     cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}" || die "Cannot backup current installation to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
     trace "Currently installed version backuped to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
@@ -400,10 +400,10 @@ subcommandaction_version_update() {
     rm -rf "${GITXFLOW_DIR}/lib" || die "Cannot clean current libraries directory: '${GITXFLOW_DIR}/lib'."
     rm -rf "${GITXFLOW_DIR}/update" || die "Cannot clean previous update directory: '${GITXFLOW_DIR}/update'."
     mkdir "${GITXFLOW_DIR}/update" || die "Cannot create update directory: '${GITXFLOW_DIR}/update'."
-    curl -L -s "https://github.com/golflima/git-xflow/archive/${name}.zip" > "${GITXFLOW_DIR}/update/${name}.zip"
-    unzip -uqq "${GITXFLOW_DIR}/update/${name}.zip" -d "${GITXFLOW_DIR}/update" || die "Cannot extract update package: '${GITXFLOW_DIR}/update/${name}.zip'."
-    cp -rf "${GITXFLOW_DIR}/update/git-xflow-${name}/." "${GITXFLOW_DIR}" || die "Cannot install new scripts to: '${GITXFLOW_DIR}'."
-    install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-${name}/git-xflow" "${GITXFLOW_DIR}" || die "Cannot install new git-flow executable to: '${GITXFLOW_DIR}'."
+    curl -L -s "https://github.com/golflima/git-xflow/archive/${version}.zip" > "${GITXFLOW_DIR}/update/${version}.zip"
+    unzip -uqq "${GITXFLOW_DIR}/update/${version}.zip" -d "${GITXFLOW_DIR}/update" || die "Cannot extract update package: '${GITXFLOW_DIR}/update/${version}.zip'."
+    cp -rf "${GITXFLOW_DIR}/update/git-xflow-${version}/." "${GITXFLOW_DIR}" || die "Cannot install new scripts to: '${GITXFLOW_DIR}'."
+    install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-${version}/git-xflow" "${GITXFLOW_DIR}" || die "Cannot install new git-flow executable to: '${GITXFLOW_DIR}'."
     trace "New version installed to: '${GITXFLOW_DIR}'."
     rm -rf "${GITXFLOW_DIR}/update"
     end
