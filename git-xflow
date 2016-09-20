@@ -20,166 +20,15 @@
 # GNU Lesser General Public License for more details.
 # 
 # You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
+# along with this program. If not, see <http://www.gnu.org/licenses/>
 
 
 
 ############## Constants ##############
 
-GITXFLOW_VERSION="0.8.2+160905.1500"
-
-# Colors
-NC='\033[0m'
-BLACK='\033[0;30m';         DARK_GRAY='\033[1;30m'
-RED='\033[0;31m';           LIGHT_RED='\033[1;31m'
-GREEN='\033[0;32m';         LIGHT_GREEN='\033[1;32m'
-BROWN='\033[0;33m';         YELLOW='\033[1;33m'
-BLUE='\033[0;34m';          LIGHT_BLUE='\033[1;34m'
-PURPLE='\033[0;35m';        LIGHT_PURPLE='\033[1;35m'
-CYAN='\033[0;36m';          LIGHT_CYAN='\033[1;36m'
-LIGHT_GRAY='\033[0;37m';    WHITE='\033[1;37m'
-
-
-
-############## Import gitflow-common functions ##############
-GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")  #
-. "$GITXFLOW_DIR/gitflow-common"                            #
-gitflow_load_settings                                       #
-require_gitflow_initialized                                 #
-#############################################################
-
-
-
-############## General functions ##############
-
-# Displays trace information message $@ in dark gray
-trace() { echo -e "${DARK_GRAY}$@${NC}"; }
-
-# Displays information message $@ in light blue
-info() { echo -e "${LIGHT_BLUE}$@${NC}"; }
-
-# Displays success message $@ in green
-success() { echo -e "${GREEN}$@${NC}"; }
-
-# Displays warning message $@ in brown/orange (overriden from gitflow-common)
-warn() { echo -e "${BROWN}$@${NC}" >&2; }
-
-# Ends the execution, and displays $@ in bold red (overriden from gitflow-common)
-die() { warn "${LIGHT_RED}$@"; exit 1; }
-
-# Ends the execution, and displays a last message ($@ if set, 'Done.' otherwise)
-end() { [ -z "$@" ] && echo -e "${GREEN}Done.${NC}" || echo -e "${GREEN}$@${NC}"; exit 0; }
-
-# Ends the execution if given argument $1 is empty and displays usage of subcommand $2, or global usage if $2 is empty
-require_argument() { [ -z "$(eval "echo \$$1")" ] && usage $2 && echo && die "Missing <$1> argument !"; }
-
-# Ends the execution if given command $1 returns an error and displays debug information. Usage: assertok "command" $LINENO
-assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line $2, following command failed (err: $?):" && die "$1"; }
-
-# Displays usage information of subcommand $1 if set, or global usage information otherwise
-usage() {
-    info "git-xflow, v$GITXFLOW_VERSION"
-    echo
-    case "$1" in
-        feature)
-            echo "Usage: git xflow feature <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into feature <name> on $ORIGIN."
-            echo "    close <name>         Finish and push feature <name> to $ORIGIN."
-            echo "    cancel <name>        Delete feature <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of feature <name> from $ORIGIN."
-            echo "    review <name>        Review changes between feature <name> and $DEVELOP_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between feature <name> and $DEVELOP_BRANCH in a HTML file." ;;
-        staging)
-            echo "Usage: git xflow staging <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merge <name>    Merge feature <name> into staging branch."
-            echo "    merged          Check branches merged into staging on $ORIGIN."
-            echo "    reset           Reset staging branch to develop."
-            echo "    reset <name>    Reset staging branch to feature <name>."
-            echo "    pull            Pull staging from $ORIGIN."
-            echo "    log             Display commits history of staging from $ORIGIN."
-            echo "    review          Review changes between staging and $DEVELOP_BRANCH with less."
-            echo "    reviewhtml      Review changes between staging and $DEVELOP_BRANCH in a HTML file." ;;
-        develop)
-            echo "Usage: git xflow develop <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged         Check branches merged into $DEVELOP_BRANCH on $ORIGIN."
-            echo "    log            Display commits history of $DEVELOP_BRANCH from $ORIGIN."
-            echo "    review         Review changes between staging and $MASTER_BRANCH with less."
-            echo "    reviewhtml     Review changes between staging and $MASTER_BRANCH in a HTML file." ;;
-        release)
-            echo "Usage: git xflow release <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into release <name> on $ORIGIN."
-            echo "    pull <name>          Pull release <name> from $ORIGIN."
-            echo "    close <name>         Finish and push release <name> to $ORIGIN."
-            echo "    cancel <name>        Delete release <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of release <name> from $ORIGIN."
-            echo "    review <name>        Review changes between release <name> and $MASTER_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between release <name> and $MASTER_BRANCH in a HTML file." ;;
-        hotfix)
-            echo "Usage: git xflow hotfix <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>        Check branches merged into hotfix <name> on $ORIGIN."
-            echo "    publish <name>       Publish hotfix <name> to $ORIGIN."
-            echo "    pull <name>          Pull hotfix <name> from $ORIGIN."
-            echo "    close <name>         Finish and push hotfix <name> to $ORIGIN."
-            echo "    cancel <name>        Delete hotfix <name> from local and $ORIGIN."
-            echo "    log <name>           Display commits history of hotfix <name> from $ORIGIN."
-            echo "    review <name>        Review changes between hotfix <name> and $MASTER_BRANCH with less."
-            echo "    reviewhtml <name>    Review changes between hotfix <name> and $MASTER_BRANCH in a HTML file." ;;
-        master)
-            echo "Usage: git xflow master <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged         Check branches merged into $MASTER_BRANCH on $ORIGIN."
-            echo "    pull           Pull $MASTER_BRANCH HEAD from $ORIGIN."
-            echo "    pull <name>    Pull tag <name> from $ORIGIN."
-            echo "    log            Display commits history of $MASTER_BRANCH from $ORIGIN." ;;
-        patch)
-            echo "Usage: git xflow patch <action>"
-            echo
-            echo "Available actions are:"
-            echo "    make <from> <to>        Build a diff-patch from branch or tag <from> to branch or tag <to>."
-            echo "    showtags                Display list of tags as used by 'git xflow patch maketags <to> <from>'."
-            echo "    maketags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
-            echo "    maketags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
-            echo "    apply <name>            Apply patch <name> in current working directory." ;;
-        version)
-            echo "Usage: git xflow version <action>"
-            echo
-            echo "Available actions are:"
-            echo "    show           Show version of git-xflow."
-            echo "    check          Check for updates of git-xflow."
-            echo "    update         Update git-xflow to latest available version." ;;
-        *)
-            echo "Usage: git xflow [--nogf] <subcommand>"
-            echo
-            echo "Available subcommands are:"
-            echo "    feature    Manage feature branches."
-            echo "    staging    Manage staging branch."
-            echo "    develop    Manage $DEVELOP_BRANCH branch."
-            echo "    release    Manage release branches."
-            echo "    hotfix     Manage hotfix branches."
-            echo "    master     Manage $MASTER_BRANCH branch."
-            echo "    patch      Build and apply patches."
-            echo "    help       Show help information."
-            echo "    version    Show version information and check for updates."
-            echo
-            echo "Available options are:"
-            echo "    --nogf     Disable call to git-flow when unknown subcommand is given."
-            echo
-            echo "Try 'git xflow help <subcommand>' for details." ;;
-    esac
-    echo
-    echo "More information at : https://github.com/golflima/git-xflow"
-}
+readonly GITXFLOW_VERSION="0.9.0+160920.2200"
+readonly GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+readonly GITXFLOW_ARGS="$@"
 
 
 
@@ -201,6 +50,32 @@ subcommand_help() {
     exit 0;
 }
 
+# Called by: 'git xflow init'
+subcommand_init() {
+    local branch tpl
+    # Cleaning previous settings
+    git config --remove-section gitxflow.branch 2>/dev/null
+    git config --remove-section gitxflow.template 2>/dev/null
+    # Staging branch configuration
+    question "Staging branch [staging]: "
+    read branch
+    [[ -z "${branch}" ]] && branch="staging"
+    git config gitxflow.branch.staging "${branch}" && info "Staging branch selected: '${branch}'." || die "Error: $? at ${LINENO}."
+    # Template selection
+    question "Select your templates for 'git xflow <branch> review': "
+    trace "([0] to exit)"
+    select tpl in "${GITXFLOW_DIR}/templates/review"/*; do
+        [[ -f "${tpl}" ]] || break;
+        git config --path --add gitxflow.template.review "${tpl}" && info "Review template added: '${tpl}'." || die "Error: $? at ${LINENO}."
+    done
+    question "Select your templates for 'git xflow patch': "
+    trace "([0] to exit)"
+    select tpl in "${GITXFLOW_DIR}/templates/patch"/*; do
+        [[ -f "${tpl}" ]] || break;
+        git config --path --add gitxflow.template.patch "${tpl}" && info "Patch template added: '${tpl}'." || die "Error: $? at ${LINENO}."
+    done
+    end
+}
 
 
 ##### Global '<subcommand> <action>' handlers #####
@@ -208,55 +83,57 @@ subcommand_help() {
 # Called by: 'git xflow <subcommand> close <name>'
 action_close() {
     [ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] || die "Not supported operation"
-    require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
+    require_argument "subcommand" "${subcommand}"
+    require_argument "name" "${subcommand}"
     if git_local_branch_exists $subcommand/$name; then
-        echo "Finishing '$subcommand/$name' ..."
-        assertok "git flow $subcommand finish $name -p" $LINENO
+        echo "Finishing '${subcommand}/${name}' ..."
+        assertok "git flow ${subcommand} finish ${name} -p" ${LINENO}
         end
     fi
 
-    subcommandaction_${subcommand}_${action} "$name" $*
+    subcommandaction_${subcommand}_${action} "${name}" $*
     
-    if git_local_branch_exists $subcommand/$name; then
-        assertok "git push $ORIGIN :$subcommand/$name" $LINENO
+    if git_local_branch_exists ${subcommand}/${name}; then
+        assertok "git push $ORIGIN :${subcommand}/${name}" ${LINENO}
     fi
     end
 }
 
 # Called by: 'git xflow <subcommand> cancel <name>'
 action_cancel() {
-    require_argument "subcommand" "$subcommand"
-    require_argument "name" "$subcommand"
-    info "Cancelling branch '$subcommand/$name' ..."
-    [ $(git_current_branch) = $subcommand/$name ] && assertok "git checkout develop" $LINENO
-    git_local_branch_exists $subcommand/$name && assertok "git branch -D $subcommand/$name" $LINENO
-    git_remote_branch_exists $subcommand/$name && assertok "git branch -D $ORIGIN/$subcommand/$name" $LINENO
+    require_argument "subcommand" "${subcommand}"
+    require_argument "name" "${subcommand}"
+    info "Cancelling branch '${subcommand}/${name}' ..."
+    [[ $(git_current_branch) = ${subcommand}/${name} ]] && assertok "git checkout ${DEVELOP_BRANCH}" ${LINENO}
+    git_local_branch_exists ${subcommand}/${name} && assertok "git branch -D ${subcommand}/${name}" ${LINENO}
+    git_remote_branch_exists ${subcommand}/${name} && assertok "git branch -D $ORIGIN/${subcommand}/${name}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow <subcommand> log <optional: name>'
 action_log() {
-    require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    info "Getting logs for branch '$branch_name' ..."
-    git log "$branch_name" --color --graph --decorate --topo-order --abbrev-commit --date=short \
+    require_argument "subcommand" "${subcommand}"
+    local branch_name
+    [[ -z "${name}" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Getting logs for branch '${branch_name}' ..."
+    git log "${branch_name}" --color --graph --decorate --topo-order --abbrev-commit --date=short \
         --pretty=format:"%C(green)%h %C(red bold)[%<(10)%ad] %Creset%s%Cred%d%C(blue bold) [%an]"
     end
 }
 
 # Called by: 'git xflow <subcommand> merged <optional: name>'
 action_merged() {
-    require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    info "Checking branches merged into '$branch_name' ..."
+    require_argument "subcommand" "${subcommand}"
+    local branch_name branch commit contained
+    [[ -z "$name" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Checking branches merged into '${branch_name}' ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
         commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
-        set -- $(echo $commit | awk -F"|" '{print $1,$2,$3,$4,$5}')
+        set -- $(echo ${commit} | awk -F"|" '{print $1,$2,$3,$4,$5}')
         contained=`git branch -r --contains $1 | grep ${branch_name}`
-        echo -e `[ -n "$contained" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
+        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
     done | sort -r
     echo
     end
@@ -264,88 +141,44 @@ action_merged() {
 
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
-    require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo "$subcommand" | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo "$subcommand" | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
-    echo -e "Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ...\n\n$( \
-        git diff ${compare_to_branch}..${branch_name} --name-status)\n\n$( \
-        git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
-        --diff-algorithm=minimal --color --word-diff=color --find-copies-harder -B -C)" | less -r
-    end
-}
-
-# Called by: 'git xflow <subcommand> reviewhtml <optional: name>'
-action_reviewhtml() {
-    require_argument "subcommand" "$subcommand"
-    [ -z "$name" ] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [ -n "$(echo $subcommand | grep "feature\|staging")" ] && compare_to_branch="$DEVELOP_BRANCH"
-    [ -n "$(echo $subcommand | grep "$DEVELOP_BRANCH\|release\|hotfix")" ] && compare_to_branch="$MASTER_BRANCH"
-    [ -z "$compare_to_branch" ] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
+    require_argument "subcommand" "${subcommand}"
+    local branch_name compare_to_branch repo_name branch_diff files_diff review_name template_list template
+    [[ -z "$name" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && compare_to_branch="${DEVELOP_BRANCH}"
+    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && compare_to_branch="${MASTER_BRANCH}"
+    [[ -z "$compare_to_branch" ]] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
     repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
     info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
     branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
     files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
-    TAB=$'\t' # Fix for old version of 'sed' (Mac OS X ...)
-    html_diff="<!DOCTYPE html>
-    <html>
-        <head>
-            <title>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</title>
-            <meta charset=\"UTF-8\">
-            <meta name=\"generator\" content=\"git-xflow, v${GITXFLOW_VERSION}\">
-            <style type=\"text/css\">
-                body { color: black; background-color: white; font-family: monospace; }
-                p { display: inline-block; margin: 0 -0.5em 0 0; white-space: pre; }
-                a { color: inherit; text-decoration: inherit; }
-                a:hover {text-decoration: underline; }
-                h3 { color: blue; font-weight: bold; }
-                h4 { color: purple; }
-                h4 + br + p { background-color: bisque; font-style:oblique; }
-                h4 + br + p + p { background-color: greenyellow; font-style:oblique; }
-                h3, h4, .s { background-color: ghostwhite; text-decoration: underline overline; }
-                .s { color: blue; }
-                .f { background-color: white !important; }
-                .u, .m { color: gray; }
-                .a { color: green; background-color: greenyellow; }
-                .d { color: red; background-color: bisque; text-decoration: line-through; }
-                .d:hover { text-decoration: none; }
-                .c { white-space: nowrap; }
-            </style>
-        </head>
-        <body>
-            <h1><a id=\"top\"></a>Review of '${repo_name}' from '${compare_to_branch}' to '${branch_name}'</h1>
-            <h2>Files</h2>
-            $(echo "${files_diff}" | sed -e "s/^A${TAB}\(.*\)$/<p class=\"f a\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^M${TAB}\(.*\)$/<p class=\"f m\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" \
-                -e "s/^D${TAB}\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" )
-            <h2>Content</h2><div>
-            $(echo "${branch_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
-                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${compare_to_branch} \1 | ${branch_name} \2<\/h4><br \/>\
-                    /g" \
-                | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
-                -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
-                -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
-                -e "s/^\(diff --git ${compare_to_branch}:\(.*\) ${branch_name}:.*\)$/<br \/><\/div><h3><a id=\"\2\" href=\"#top\">\1<\/a><\/h3><div class=\"c\">/g" \
-                | sed -e "s/^\([^< -+~@].*\)$/<p class=\"s\">\1<\/p>/g" )
-            </div>
-        </body>
-    </html>"
-    echo "${html_diff}" > "review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html"
-    end "Review successfully saved into file 'review_${repo_name}_from_${compare_to_branch}_to_${branch_name}.html'."
+    review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
+    empty_flag output || review_name="$(get_flag output)"
+    empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
+    echo "${template_list}" | while read template ; do
+        parse_template review "${template}" "${review_name}" ""
+    done
+    end
 }
 
+# Called by: 'git xflow <subcommand> patch <optional: name>'
+action_patch() {
+    require_argument "subcommand" "${subcommand}"
+    local branch_to branch_from
+    [[ -z "$name" ]] && branch_to="${subcommand}" || branch_to="${subcommand}/${name}"
+    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && branch_from="${DEVELOP_BRANCH}"
+    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && branch_from="${MASTER_BRANCH}"
+    [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
+    subcommandaction_patch_make patch make "${branch_from}" "${branch_to}"
+}
 
 
 ##### 'feature <action>' handlers #####
 
 # Called by: 'git xflow feature close <name>'
 subcommandaction_feature_close() {
-    info "Closing 'feature/$name' ..."
-    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
+    info "Closing '${FEATURE_PREFIX}${name}' ..."
+    assertok "git push ${ORIGIN} ${DEVELOP_BRANCH}" ${LINENO}
 }
 
 
@@ -354,51 +187,53 @@ subcommandaction_feature_close() {
 
 # Called by: 'git xflow staging merge <name>'
 subcommandaction_staging_merge() {
-    require_argument "name" "$subcommand"
+    require_argument "name" "${subcommand}"
+    local previous_branch
     previous_branch=$(git_current_branch)
     require_clean_working_tree
-    info "Merging 'feature/$name' into staging ..."
-    git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
-    if git_remote_branch_exists staging; then
-        assertok "git checkout staging" $LINENO
+    info "Merging '${FEATURE_PREFIX}${name}' into ${STAGING_BRANCH} ..."
+    git_local_branch_exists feature/${name} || assertok "git flow feature track ${name}" ${LINENO}
+    if git_remote_branch_exists ${STAGING_BRANCH}; then
+        assertok "git checkout ${STAGING_BRANCH}" ${LINENO}
     else
         if git_local_branch_exists staging; then
-            assertok "git checkout feature/$name" $LINENO
-            assertok "git branch -D staging" $LINENO
+            assertok "git checkout ${FEATURE_PREFIX}${name}" ${LINENO}
+            assertok "git branch -D ${STAGING_BRANCH}" ${LINENO}
         fi
-        assertok "git checkout -b staging $DEVELOP_BRANCH" $LINENO
-        assertok "git branch --set-upstream-to=$ORIGIN/staging" $LINENO
+        assertok "git checkout -b ${STAGING_BRANCH} ${DEVELOP_BRANCH}" ${LINENO}
+        assertok "git branch --set-upstream-to=${ORIGIN}/${STAGING_BRANCH}" ${LINENO}
     fi
-    assertok "git pull" $LINENO
-    assertok "git merge feature/$name" $LINENO
-    assertok "git push" $LINENO
-    assertok "git checkout $previous_branch" $LINENO
+    assertok "git pull" ${LINENO}
+    assertok "git merge ${FEATURE_PREFIX}${name}" ${LINENO}
+    assertok "git push" ${LINENO}
+    assertok "git checkout ${previous_branch}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow staging reset <optional: name>'
 subcommandaction_staging_reset() {
+    local previous_branch
     previous_branch=$(git_current_branch)
     require_clean_working_tree
-    if [ -z "$name" ] ; then
-        info "Resetting staging to '$DEVELOP_BRANCH' ..."
-        assertok "git checkout -B staging $DEVELOP_BRANCH" $LINENO
+    if [[ -z "${name}" ]]; then
+        info "Resetting ${STAGING_BRANCH} to '${DEVELOP_BRANCH}' ..."
+        assertok "git checkout -B ${STAGING_BRANCH} ${DEVELOP_BRANCH}" ${LINENO}
     else
-        info "Resetting staging to 'feature/$name' ..."
-        git_local_branch_exists feature/$name || assertok "git flow feature track $name" $LINENO
-        assertok "git pull" $LINENO
-        assertok "git checkout -B staging feature/$name" $LINENO
+        info "Resetting ${STAGING_BRANCH} to '${FEATURE_PREFIX}${name}' ..."
+        git_local_branch_exists ${FEATURE_PREFIX}${name} || assertok "git flow feature track ${name}" ${LINENO}
+        assertok "git pull" ${LINENO}
+        assertok "git checkout -B ${STAGING_BRANCH} ${FEATURE_PREFIX}${name}" ${LINENO}
     fi
-    assertok "git push -f --set-upstream $ORIGIN staging" $LINENO
-    assertok "git checkout $previous_branch" $LINENO
+    assertok "git push -f --set-upstream ${ORIGIN} ${STAGING_BRANCH}" ${LINENO}
+    assertok "git checkout ${previous_branch}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow staging pull'
 subcommandaction_staging_pull() {
-    info "Pulling 'staging' ..."
-    assertok "git checkout staging" $LINENO
-    assertok "git pull --rebase $ORIGIN staging" $LINENO
+    info "Pulling '${STAGING_BRANCH}' ..."
+    assertok "git checkout ${STAGING_BRANCH}" ${LINENO}
+    assertok "git pull --rebase ${ORIGIN} ${STAGING_BRANCH}" ${LINENO}
     end
 }
 
@@ -408,20 +243,20 @@ subcommandaction_staging_pull() {
 
 # Called by: 'git xflow release pull <name>'
 subcommandaction_release_pull() {
-    require_argument "name" "$subcommand"
-    info "Pulling 'release/$name' ..."
-    assertok "git checkout release/$name" $LINENO
-    assertok "git pull --rebase $ORIGIN release/$name" $LINENO
+    require_argument "name" "${subcommand}"
+    info "Pulling '${RELEASE_PREFIX}${name}' ..."
+    assertok "git checkout ${RELEASE_PREFIX}${name}" ${LINENO}
+    assertok "git pull --rebase ${ORIGIN} ${RELEASE_PREFIX}${name}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow release close <name>'
 subcommandaction_release_close() {
-    info "Closing 'release/$name' ..."
-    assertok "git push $name" $LINENO
-    assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
-    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
-    assertok "git push $ORIGIN $name" $LINENO
+    info "Closing '${RELEASE_PREFIX}${name}' ..."
+    assertok "git push ${name}" ${LINENO}
+    assertok "git push ${ORIGIN} ${MASTER_BRANCH}" ${LINENO}
+    assertok "git push ${ORIGIN} ${DEVELOP_BRANCH}" ${LINENO}
+    assertok "git push ${ORIGIN} ${name}" ${LINENO}
 }
 
 
@@ -431,30 +266,30 @@ subcommandaction_release_close() {
 # Called by: 'git xflow hotfix publish <name>'
 subcommandaction_hotfix_publish() {
     require_argument "name" "$subcommand"
-    info "Publishing 'hotfix/$name' to '$ORIGIN' ..."
-    assertok "git fetch -q $ORIGIN" $LINENO
-    assertok "git push -u $ORIGIN hotfix/$name:hotfix/$name" $LINENO
-    assertok "git fetch -q $ORIGIN hotfix/$name" $LINENO
-    assertok "git checkout hotfix/$name" $LINENO
+    info "Publishing '${HOTFIX_PREFIX}${name}' to '${ORIGIN}' ..."
+    assertok "git fetch -q ${ORIGIN}" ${LINENO}
+    assertok "git push -u ${ORIGIN} ${HOTFIX_PREFIX}${name}:${HOTFIX_PREFIX}${name}" ${LINENO}
+    assertok "git fetch -q ${ORIGIN} ${HOTFIX_PREFIX}${name}" ${LINENO}
+    assertok "git checkout ${HOTFIX_PREFIX}${name}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow hotfix pull <name>'
 subcommandaction_hotfix_pull() {
-    require_argument "name" "$subcommand"
-    info "Pulling 'hotfix/$name' ..."
-    assertok "git checkout hotfix/$name" $LINENO
-    assertok "git pull --rebase $ORIGIN hotfix/$name" $LINENO
+    require_argument "name" "${subcommand}"
+    info "Pulling '${HOTFIX_PREFIX}${name}' ..."
+    assertok "git checkout ${HOTFIX_PREFIX}${name}" ${LINENO}
+    assertok "git pull --rebase ${ORIGIN} ${HOTFIX_PREFIX}${name}" ${LINENO}
     end
 }
 
 # Called by: 'git xflow hotfix close <name>'
 subcommandaction_hotfix_close() {
-    info "Closing 'hotfix/$name' ..."
-    assertok "git push $name" $LINENO
-    assertok "git push $ORIGIN $MASTER_BRANCH" $LINENO
-    assertok "git push $ORIGIN $DEVELOP_BRANCH" $LINENO
-    assertok "git push $ORIGIN $name" $LINENO
+    info "Closing 'hotfix/${name}' ..."
+    assertok "git push ${name}" ${LINENO}
+    assertok "git push ${ORIGIN} ${MASTER_BRANCH}" ${LINENO}
+    assertok "git push ${ORIGIN} ${DEVELOP_BRANCH}" ${LINENO}
+    assertok "git push ${ORIGIN} ${name}" ${LINENO}
 }
 
 
@@ -463,14 +298,14 @@ subcommandaction_hotfix_close() {
 
 # Called by: 'git xflow master pull'
 subcommandaction_master_pull() {
-    if [ -z "$name" ] ; then
-        info "Pulling '$MASTER_BRANCH' to HEAD ..."
-        assertok "git checkout $MASTER_BRANCH" $LINENO
-        assertok "git pull --rebase $ORIGIN $MASTER_BRANCH" $LINENO
+    if [[ -z "${name}" ]]; then
+        info "Pulling '${MASTER_BRANCH}' to HEAD ..."
+        assertok "git checkout ${MASTER_BRANCH}" ${LINENO}
+        assertok "git pull --rebase ${ORIGIN} ${MASTER_BRANCH}" ${LINENO}
     else
-        info "Pulling 'tags/$name' ..."
-        assertok "git checkout tags/$name" $LINENO
-        assertok "git pull --rebase $ORIGIN tags/$name" $LINENO
+        info "Pulling 'tags/${name}' ..."
+        assertok "git checkout tags/${name}" ${LINENO}
+        assertok "git pull --rebase ${ORIGIN} tags/${name}" ${LINENO}
     fi
     end
 }
@@ -479,24 +314,29 @@ subcommandaction_master_pull() {
 
 ##### 'patch <action>' handlers #####
 
-# Called by: 'git xflow patch make <to> <from>'
+# Called by: 'git xflow patch make <from> <to>'
 subcommandaction_patch_make() {
-    patch_from="$3"; require_argument "patch_from" "$subcommand"
-    patch_to="$4"; require_argument "patch_to" "$subcommand"
+    local patch_from patch_to patch_diff patch_name template_list template
+    patch_from="$3"; require_argument "patch_from" "${subcommand}"
+    patch_to="$4"; require_argument "patch_to" "${subcommand}"
     info "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
     patch_diff=`git diff --name-status ${patch_from}..${patch_to}`
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
+    empty_flag output || patch_name="$(get_flag output)"
     trace "${patch_diff}"
-    echo "${patch_diff}" > ${patch_name}.log
-    assertok "git archive -o ${patch_name}.zip ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)" $LINENO
+    empty_flag template && template_list="${GITXFLOW_TEMPLATE_PATCH}" || template_list="$(get_flag template)"
+    echo "${template_list}" | while read template ; do
+        parse_template patch "${template}" "${patch_name}" ""
+    done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
-    end "Successfully built patch '${patch_name}'."
+    end
 }
 
-# Called by: 'git xflow patch maketags <optional: to> <optional: from>'
-subcommandaction_patch_maketags() {
-    [ -z "$3$4" ] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
-    [ -z "$3" -o -z "$4" ] && usage $2 && echo && die "Missing <to> or <from> argument !"
+# Called by: 'git xflow patch tags <optional: from> <optional: to>'
+subcommandaction_patch_tags() {
+    local patch_from_tag patch_to_tag
+    [[ -z "$3$4" ]] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
+    [[ -z "$3" || -z "$4" ]] && usage $2 && echo && die "Missing <to> or <from> argument !"
     patch_from_tag=`git tag | head -n $3 | tail -n 1`
     patch_to_tag=`git tag | head -n $4 | tail -n 1`
     subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
@@ -505,22 +345,23 @@ subcommandaction_patch_maketags() {
 # Called by: 'git xflow patch showtags'
 subcommandaction_patch_showtags() {
     info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
-    trace "$(git tag | nl)"
+    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
     end
 }
 
 # Called by: 'git flow patch apply <name>'
 subcommandaction_patch_apply() {
-    require_argument "name" "$subcommand"
-    info "Applying patch $name ..."
-    [ -f "$name.log" ] || die "File '$name.log' not found"
-    [ -f "$name.zip" ] || die "File '$name.zip' not found"
-    patch_diff="$(<$name.log)"
+    require_argument "name" "${subcommand}"
+    local patch_diff deleted_files
+    info "Applying patch ${name} ..."
+    [[ -f "${name}.log" ]] || die "File '${name}.log' not found"
+    [[ -f "${name}.zip" ]] || die "File '${name}.zip' not found"
+    patch_diff="$(<"${name}.log")"
     trace "${patch_diff}"
     info "Copying new and modified files ..."
-    assertok "unzip $name.zip" $LINENO
+    assertok "unzip ${name}.zip" ${LINENO}
     deleted_files="$(echo "${patch_diff}" | grep ^D | cut -f2)"
-    [ -n "${deleted_files}" ] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" $LINENO
+    [[ -n "${deleted_files}" ]] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" ${LINENO}
     end
 }
 
@@ -529,57 +370,120 @@ subcommandaction_patch_apply() {
 
 # Called by: 'git xflow version show'
 subcommandaction_version_show() {
-    info "$GITXFLOW_VERSION"
+    info "${GITXFLOW_VERSION}"
     exit 0;
 }
 
 # Called by: 'git xflow version check'
 subcommandaction_version_check() {
-    info "Current version is $GITXFLOW_VERSION, checking for newer version ..."
-    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    if [ "$GITXFLOW_VERSION" = "$official_version" ] ; then
+    local official_version
+    info "Current version is ${GITXFLOW_VERSION}, checking for newer version ..."
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    if [[ "${GITXFLOW_VERSION}" = "${official_version}" ]]; then
         end "git-xflow is up-to-date."
     else
-        end "${LIGHT_RED}New version of git-xflow ($official_version) available at: https://github.com/golflima/git-xflow\nOr run: 'git xflow version update'" 
+        end "${LIGHT_RED}New version of git-xflow (${official_version}) available at: https://github.com/golflima/git-xflow\nOr run: 'git xflow version update'" 
     fi
 }
 
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
-    echo -n "Upgrading git-xflow from v$GITXFLOW_VERSION to ... "
-    update_content=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/master/git-xflow"`
-    update_version=`echo -n "${update_content}" | grep "^GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    [ -z "${update_version}" ] && die "Failed to retrieve git-xflow file from remote server"
-    echo -n "v${update_version} ... "
-    echo "${update_content}" > "$GITXFLOW_DIR/git-xflow" && end "Success" || die "Failed to replace git-xflow file"
+    local official_version version
+    echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... "
+    [[ -z "${name}" ]] && version="master"
+    official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/${version}/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
+    echo -e "v${BROWN}${official_version}${NC}"
+    cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}" || die "Cannot backup current installation to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
+    trace "Currently installed version backuped to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
+    rm -f "${GITXFLOW_DIR}/*" || die "Cannot clean current installation directory: '${GITXFLOW_DIR}'."
+    rm -rf "${GITXFLOW_DIR}/docs" || die "Cannot clean current documentation directory: '${GITXFLOW_DIR}/docs'."
+    rm -rf "${GITXFLOW_DIR}/lib" || die "Cannot clean current libraries directory: '${GITXFLOW_DIR}/lib'."
+    rm -rf "${GITXFLOW_DIR}/update" || die "Cannot clean previous update directory: '${GITXFLOW_DIR}/update'."
+    mkdir "${GITXFLOW_DIR}/update" || die "Cannot create update directory: '${GITXFLOW_DIR}/update'."
+    curl -L -s "https://github.com/golflima/git-xflow/archive/${version}.zip" > "${GITXFLOW_DIR}/update/${version}.zip"
+    unzip -uqq "${GITXFLOW_DIR}/update/${version}.zip" -d "${GITXFLOW_DIR}/update" || die "Cannot extract update package: '${GITXFLOW_DIR}/update/${version}.zip'."
+    cp -rf "${GITXFLOW_DIR}/update/git-xflow-${version}/." "${GITXFLOW_DIR}" || die "Cannot install new scripts to: '${GITXFLOW_DIR}'."
+    install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-${version}/git-xflow" "${GITXFLOW_DIR}" || die "Cannot install new git-flow executable to: '${GITXFLOW_DIR}'."
+    trace "New version installed to: '${GITXFLOW_DIR}'."
+    rm -rf "${GITXFLOW_DIR}/update"
+    end
 }
 
 
 
 ############## Main ##############
 # This part handle the main behavior of git-xflow
-# 1. Detect wrong usage of git-xflow and display usage info
-# 2. Process arguments
-# 3. Try to call the requested handler
-# 4. If no suitable handler is found, try to call git-flow or exit
+# 1. Load libraries
+# 2. Detect wrong usage of git-xflow and display usage info
+# 3. Process arguments and options
+# 4. Try to call the requested handler
+# 5. If no suitable handler is found, try to call git-flow or exit
 
-[ $# -lt 1 ] && usage && exit 1
-[ "$1" = "--nogf" ] && disable_gitflow_proxy=yes && shift
+main() {
+    # Import shFlags functions
+    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
 
-subcommand="$1"
-action="$2"
-name="$3"
+    # Import common functions of git-flow, and require git-flow to be initialized
+    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    gitflow_load_settings
+    require_gitflow_initialized
 
-[ "$(type -t subcommand_${subcommand})" = "function" ] && subcommand_${subcommand} $*
-[ "$(type -t action_${action})" = "function" ] && action_${action} "$subcommand" "$name" $*
-[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ] && subcommandaction_${subcommand}_${action} $*
+    # Import common functions of git-xflow, and load its settings
+    . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
+    gitxflow_load_settings
 
-if [ "$disable_gitflow_proxy" = "yes" ] ; then
-    die "Not supported operation. Try 'git xflow help'."
-else
-    warn "Operation not supported by git-xflow ('git xflow help'), trying with vanilla git-flow ..."
-    info "git flow $*"
-    assertok "git flow $*" $LINENO
-fi
+    [[ $# = 0 ]] && notice && exit 1;
 
-exit 0;
+    # Load generic flags for git-xflow
+    DEFINE_boolean 'no-forward' false 'Disable forward of unrecognized commands to gitflow' 'g'
+    DEFINE_boolean 'no-color' false 'Disable colored output' 'c'
+    DEFINE_boolean 'verbose' false 'Show more information' 'v'
+    DEFINE_boolean 'license' false 'Show license' 'l'
+    DEFINE_boolean 'help' false 'Show help' 'h'
+
+    # Load command flags for git-xflow
+    DEFINE_string 'subcommand' "$1" 'git xflow <subcommand> <action> <name>' 's'
+    DEFINE_string 'action' "$2" 'git xflow <subcommand> <action> <name>' 'a'
+    DEFINE_string 'name' "$3" 'git xflow <subcommand> <action> <name>' 'n'
+
+    # Load specific command flags for git-xflow
+    DEFINE_string 'template' '' 'Template file to use' 't'
+    DEFINE_string 'output' '' 'Output base name' 'o'
+
+    # parse the command-line
+    FLAGS "$@" || die "Cannot parse command-line !"
+    has_flag license && less "${GITXFLOW_DIR}/LICENSE" && end;
+    has_flag debug && FLAGS_show_commands="${FLAGS_TRUE}"
+    has_flag no_color && remove_color
+
+    readonly subcommand="$(get_flag "subcommand")"
+    readonly action="$(get_flag "action")"
+    readonly name="$(get_flag "name")"
+
+    has_flag help && usage "${subcommand}" "${action}" "${name}" && exit 0;
+
+    gitxflow_is_initialized
+    [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
+
+    readonly hookname="${DOT_GIT_DIR}/git-xflow/hooks/${subcommand}-${action}"
+    if [[ -f "${hookname}" ]]; then
+        echo -en "${DARK_GRAY}Running hook: '${hookname}' ... ${NC}"
+        sh "${hookname}" "$@" || die "Failed ! (exit code: $?)"
+        trace "OK"
+    fi
+
+    [[ "$(type -t subcommand_${subcommand})" = "function" ]] && subcommand_${subcommand} $*
+    [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${name}" $*
+    [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} $*
+
+    if has_flag no_forward; then
+        die "Not supported operation. Try 'git xflow help'."
+    else
+        warn "Operation not supported by git-xflow ('git xflow help'), trying with vanilla git-flow ..."
+        info "git flow $*"
+        assertok "git flow $*" ${LINENO}
+    fi
+    exit 0;
+}
+
+main $@
