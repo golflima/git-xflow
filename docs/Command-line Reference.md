@@ -37,7 +37,7 @@ Available command-specific OPTIONs:
 * `-t TEMPLATE` `--template TEMPLATE` : Use TEMPLATE to render command (review, patch).
 * `-o OUTPUT`   `--output OUTPUT`     : Use OUTPUT as basename for generated files (review, patch).
 
-Try `git xflow [SUBCOMMAND] [ACTION] [NAME] -h` for details.
+Type '`git xflow [`SUBCOMMAND`] [`ACTION`] [`NAME`] -h`' for details.
 More information at : https://github.com/golflima/git-xflow
 
 
