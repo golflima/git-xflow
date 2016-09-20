@@ -78,36 +78,12 @@ remove_color() {
     CYAN=; LIGHT_CYAN=; LIGHT_GRAY=; WHITE=;
 }
 
-# convenience functions for checking shFlags flags
+# Convenience functions for checking shFlags flags
 get_flag() { local flag; flag="FLAGS_$1"; echo -n "$(eval "echo -n \${${flag}}")"; }
 set_flag() { local flag; flag="FLAGS_$1"; eval "\${${flag}}=\"$2\""; }
 empty_flag() { [[ -z "$(get_flag "$1")" ]]; }
 has_flag() { [[ "$(get_flag "$1")" = "${FLAGS_TRUE}" ]]; }
 hasnt_flag() { [[ "$(get_flag "$1")" != "${FLAGS_TRUE}" ]]; }
-
-has_option() {
-    [[ -z "$1" ]] && die "Missing option name."
-    local option found
-    [[ "$1" =~ ^[[:alnum:]]$ ]] && option="$1" || option='-'
-    while getopts "${option}" found ${GITXFLOW_ARGS}; do
-        [[ "${found}" = "$1" || "${found}" = '-' && "${OPTARG}" = "$1" ]] && return 0;
-    done
-    return 1;
-}
-
-require_option() {
-    ! has_option "$1" && usage $2 && echo && die "Missing <$1> option !";
-}
-
-get_option() {
-    [[ -z "$1" ]] && die "Missing option name."
-    [[ "$1" =~ ^[[:alnum:]]$ ]] || die "Invalid option name: '$1'."
-    local found
-    while getopts "$1:" found ${GITXFLOW_ARGS}; do
-        [[ "${found}" = "$1" ]] && echo "${OPTARG}"; return 0;
-    done
-    return 1;
-}
 
 # Loads settings that can be overridden using git config
 gitxflow_load_settings() {
@@ -226,9 +202,12 @@ parse_template() {
 # Disable flags_help() function of shFlags
 flags_help() { return 0; }
 
+# Colorize a given markdown text
 colorize_markdown() {
     [[ -z "$1" ]] && return 1;
     local colorized_markdown lhs rhs
+    # Handle lists, emphasized elements, inline code,
+    # argument name in capital letters, and citation blocks
     colorized_markdown="$(echo -n "$1" | sed \
         -e 's/^\*[[:blank:]]*\(.*\)$/    \1/g' \
         -e 's/\*\([^\*]*\)\*/'"${GREEN}"'\1'"${NC}"'/g' \
@@ -240,6 +219,7 @@ colorize_markdown() {
     return 0;
 }
 
+# Display usage information
 usage() {
     local help_file help_content
     help_file="${GITXFLOW_DIR}/docs/Command-line Reference.md"
@@ -252,12 +232,13 @@ usage() {
     echo -e "$(colorize_markdown "${help_header}\n${help_content}")"
 }
 
+# Display legal terms
 notice() {
-    trace "git-xflow, Copyright (C) 2016, Jérémy WALTHER (jeremy.walther@golflima.net)"
+    info "git-xflow, v${GITXFLOW_VERSION}, Copyright (C) 2016, Jérémy WALTHER."
     trace "This program comes with ABSOLUTELY NO WARRANTY; for details type 'git xflow -l'."
     trace "This is free software, and you are welcome to redistribute it"
     trace "under certain conditions; type 'git xflow -l' for details."
-    trace
-    trace "For help, type 'git xflow -h'."
-    trace "For more information, please visit: <https://github.com/golflima/git-xflow>."
+    echo
+    info "For help, type 'git xflow -h'."
+    info "For more information, please visit: <https://github.com/golflima/git-xflow>."
 }

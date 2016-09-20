@@ -4,7 +4,7 @@
 
 ## git xflow
 
-Usage: `git xflow SUBCOMMAND NAME [OPTION]`
+Usage: `git xflow SUBCOMMAND ACTION [NAME] [OPTION]`
 
 Available SUBCOMMANDs are:
 
@@ -18,11 +18,26 @@ Available SUBCOMMANDs are:
 * `help`            : Show help information.
 * `version`         : Show version information and check for updates.
 
-Available options are:
+Available global OPTIONs are:
 
-* `--nogf`          : Disable call to git-flow when unknown subcommand is given.
+* `-g` `--no-forward` : Disable forward of unrecognized commands to gitflow.
+* `-c` `--no-color`   : Disable colored output.
+* `-v` `--verbose`    : Show more information.
+* `-l` `--license`    : Show license.
+* `-h` `--help`       : Show help.
 
-Try `git xflow help SUBCOMMAND` for details.
+Available OPTIONs to force arguments of git-xflow:
+
+* `-s SUBCOMMAND` `--subcommand SUBCOMMAND` : Set value of SUBCOMMAND argument.
+* `-a ACTION`     `--action ACTION`         : Set value of ACTION argument.
+* `-n NAME`       `--name NAME`             : Set value of NAME argument.
+
+Available command-specific OPTIONs:
+
+* `-t TEMPLATE` `--template TEMPLATE` : Use TEMPLATE to render command (review, patch).
+* `-o OUTPUT`   `--output OUTPUT`     : Use OUTPUT as basename for generated files (review, patch).
+
+Try `git xflow [SUBCOMMAND] [ACTION] [NAME] -h` for details.
 More information at : https://github.com/golflima/git-xflow
 
 
