@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.9.0+160920.1900"
+readonly GITXFLOW_VERSION="0.9.0+160920.2200"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
@@ -396,6 +396,8 @@ subcommandaction_version_update() {
     cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}" || die "Cannot backup current installation to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
     trace "Currently installed version backuped to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
     rm -f "${GITXFLOW_DIR}/*" || die "Cannot clean current installation directory: '${GITXFLOW_DIR}'."
+    rm -rf "${GITXFLOW_DIR}/docs" || die "Cannot clean current documentation directory: '${GITXFLOW_DIR}/docs'."
+    rm -rf "${GITXFLOW_DIR}/lib" || die "Cannot clean current libraries directory: '${GITXFLOW_DIR}/lib'."
     rm -rf "${GITXFLOW_DIR}/update" || die "Cannot clean previous update directory: '${GITXFLOW_DIR}/update'."
     mkdir "${GITXFLOW_DIR}/update" || die "Cannot create update directory: '${GITXFLOW_DIR}/update'."
     curl -L -s "https://github.com/golflima/git-xflow/archive/${name}.zip" > "${GITXFLOW_DIR}/update/${name}.zip"
