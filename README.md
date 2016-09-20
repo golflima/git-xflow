@@ -52,7 +52,7 @@ you don't have to copy it if you use latest version of git-flow and have put fil
 Command-line reference
 ----------------------
 
-See [Command-line reference.md](docs/Command-lineReference.md) in docs folder.
+See [Command-line Reference.md](docs/Command-line Reference.md) in docs folder.
 
 
 __________________________________________________
