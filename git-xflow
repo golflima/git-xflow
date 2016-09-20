@@ -32,115 +32,6 @@ readonly GITXFLOW_ARGS="$@"
 
 
 
-############## General functions ##############
-
-# Displays usage information of subcommand $1 if set, or global usage information otherwise
-usage() {
-    info "git-xflow, v${GITXFLOW_VERSION}"
-    echo
-    case "$1" in
-        feature)
-            echo "Usage: git xflow feature <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>       Check branches merged into feature <name> on ${ORIGIN}."
-            echo "    close <name>        Finish and push feature <name> to ${ORIGIN}."
-            echo "    cancel <name>       Delete feature <name> from local and ${ORIGIN}."
-            echo "    log <name>          Display commits history of feature <name> from ${ORIGIN}."
-            echo "    review <name>       Review changes between feature <name> and ${DEVELOP_BRANCH}."
-            echo "    patch  <name>       Build a diff-patch from ${DEVELOP_BRANCH} to feature <name>." ;;
-        staging)
-            echo "Usage: git xflow staging <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merge <name>        Merge feature <name> into ${STAGING_BRANCH} branch."
-            echo "    merged              Check branches merged into ${STAGING_BRANCH} on ${ORIGIN}."
-            echo "    reset               Reset ${STAGING_BRANCH} branch to develop."
-            echo "    reset <name>        Reset ${STAGING_BRANCH} branch to feature <name>."
-            echo "    pull                Pull ${STAGING_BRANCH} from ${ORIGIN}."
-            echo "    log                 Display commits history of ${STAGING_BRANCH} from ${ORIGIN}."
-            echo "    review              Review changes between ${STAGING_BRANCH} and ${DEVELOP_BRANCH}."
-            echo "    patch               Build a diff-patch from ${DEVELOP_BRANCH} to ${STAGING_BRANCH}." ;;
-        develop)
-            echo "Usage: git xflow develop <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged              Check branches merged into ${DEVELOP_BRANCH} on ${ORIGIN}."
-            echo "    log                 Display commits history of ${DEVELOP_BRANCH} from ${ORIGIN}."
-            echo "    review              Review changes between ${DEVELOP_BRANCH} and ${MASTER_BRANCH}."
-            echo "    patch               Build a diff-patch from ${MASTER_BRANCH} to ${DEVELOP_BRANCH}." ;;
-        release)
-            echo "Usage: git xflow release <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>       Check branches merged into release <name> on ${ORIGIN}."
-            echo "    pull <name>         Pull release <name> from ${ORIGIN}."
-            echo "    close <name>        Finish and push release <name> to ${ORIGIN}."
-            echo "    cancel <name>       Delete release <name> from local and ${ORIGIN}."
-            echo "    log <name>          Display commits history of release <name> from ${ORIGIN}."
-            echo "    review <name>       Review changes between release <name> and ${MASTER_BRANCH}."
-            echo "    patch  <name>       Build a diff-patch from ${MASTER_BRANCH} to release <name>." ;;
-        hotfix)
-            echo "Usage: git xflow hotfix <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged <name>       Check branches merged into hotfix <name> on ${ORIGIN}."
-            echo "    publish <name>      Publish hotfix <name> to ${ORIGIN}."
-            echo "    pull <name>         Pull hotfix <name> from ${ORIGIN}."
-            echo "    close <name>        Finish and push hotfix <name> to ${ORIGIN}."
-            echo "    cancel <name>       Delete hotfix <name> from local and ${ORIGIN}."
-            echo "    log <name>          Display commits history of hotfix <name> from ${ORIGIN}."
-            echo "    review <name>       Review changes between hotfix <name> and ${MASTER_BRANCH}." 
-            echo "    patch <name>        Build a diff-patch from ${MASTER_BRANCH} to hotfix <name>." ;;
-        master)
-            echo "Usage: git xflow master <action>"
-            echo
-            echo "Available actions are:"
-            echo "    merged              Check branches merged into ${MASTER_BRANCH} on ${ORIGIN}."
-            echo "    pull                Pull $MASTER_BRANCH HEAD from ${ORIGIN}."
-            echo "    pull <name>         Pull tag <name> from ${ORIGIN}."
-            echo "    log                 Display commits history of ${MASTER_BRANCH} from ${ORIGIN}." ;;
-        patch)
-            echo "Usage: git xflow patch <action>"
-            echo
-            echo "Available actions are:"
-            echo "    make <from> <to>    Build a diff-patch from branch or tag <from> to branch or tag <to>."
-            echo "    showtags            Display list of tags as used by 'git xflow patch maketags <to> <from>'."
-            echo "    tags                Build a diff-patch from previons tag (n-1) to latest tag (n)."
-            echo "    tags <from> <to>    Build a diff-patch from tag n°<from> to tag n°<to> (see 'git xflow patch showtags' for n°)."
-            echo "    apply <name>        Apply patch <name> in current working directory." ;;
-        version)
-            echo "Usage: git xflow version <action>"
-            echo
-            echo "Available actions are:"
-            echo "    show                Show version of git-xflow."
-            echo "    check               Check for updates of git-xflow."
-            echo "    update              Update git-xflow to latest available version." ;;
-        *)
-            echo "Usage: git xflow [--nogf] <subcommand>"
-            echo
-            echo "Available subcommands are:"
-            echo "    feature             Manage feature branches."
-            echo "    staging             Manage staging branch."
-            echo "    develop             Manage ${DEVELOP_BRANCH} branch."
-            echo "    release             Manage release branches."
-            echo "    hotfix              Manage hotfix branches."
-            echo "    master              Manage ${MASTER_BRANCH} branch."
-            echo "    patch               Build and apply patches."
-            echo "    help                Show help information."
-            echo "    version             Show version information and check for updates."
-            echo
-            echo "Available options are:"
-            echo "    --nogf              Disable call to git-flow when unknown subcommand is given."
-            echo
-            echo "Try 'git xflow help <subcommand>' for details." ;;
-    esac
-    echo
-    echo "More information at : https://github.com/golflima/git-xflow"
-}
-
-
-
 ############## git-xflow handler functions ##############
 # These functions are dynamically called when calling git-xflow
 # Typical usage: 'git xflow <subcommand> <action> <name>'
@@ -538,7 +429,7 @@ main() {
     . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
     gitxflow_load_settings
 
-    [[ $# = 0 ]] && usage && exit 1;
+    [[ $# = 0 ]] && notice && exit 1;
 
     # Load generic flags for git-xflow
     DEFINE_boolean 'no-gitflow-forward' false 'Disable forward of unrecognized commands to gitflow' 'g'
@@ -566,7 +457,7 @@ main() {
     readonly action="$(get_flag "action")"
     readonly name="$(get_flag "name")"
 
-    has_flag help && help "${subcommand}" "${action}" "${name}" && end;
+    has_flag help && help "${subcommand}" "${action}" "${name}" && exit 0;
 
     gitxflow_is_initialized
     [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."

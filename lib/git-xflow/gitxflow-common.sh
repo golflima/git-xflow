@@ -226,14 +226,38 @@ parse_template() {
 # Disable flags_help() function of shFlags
 flags_help() { return 0; }
 
-help() {
-    trace "Help ! 'git xflow $1 $2 $3'"
+colorize_markdown() {
+    [[ -z "$1" ]] && return 1;
+    local colorized_markdown lhs rhs
+    colorized_markdown="$(echo -n "$1" | sed \
+        -e 's/^\*[[:blank:]]*\(.*\)$/    \1/g' \
+        -e 's/\*\([^\*]*\)\*/'"${GREEN}"'\1'"${NC}"'/g' \
+        -e 's/`\([^`]*\)`/'"${LIGHT_BLUE}"'\1'"${NC}"'/g' \
+        -e 's/\([[:upper:]]\{2,\}\)/'"${BROWN}"'\1'"${NC}"'/g' \
+        -e 's/^>[[:blank:]]*\(.*\)$/'"${DARK_GRAY}"'\1'"${NC}"'/g' \
+        )"
+    echo -en "${colorized_markdown}"
+    return 0;
+}
+
+usage() {
     local help_file help_content
     help_file="${GITXFLOW_DIR}/docs/Command-line Reference.md"
     [[ -f "${help_file}" ]] || die "Cannot locate help file: '${help_file}'."
     help_content="$(<"${help_file}")"
-    [[ "${help_content}" =~ .*##[[:blank:]]*git[[:blank:]]*xflow[[:blank:]]*$1([[:blank:]]*$2)?([^#]*)## ]] || return 1;
-    help_content="${BASH_REMATCH[2]}"
-    echo "${help_content}"
-    end
+    [[ "${help_content}" =~ .?##[[:blank:]]*git[[:blank:]]*xflow[[:blank:]]*$1[[:blank:]]*$2[[:cntrl:]]*([^#]*)## ]] || \
+    [[ "${help_content}" =~ .?##[[:blank:]]*git[[:blank:]]*xflow[[:blank:]]*$1[[:cntrl:]]*([^#]*)## ]] || \
+    [[ "${help_content}" =~ .?##[[:blank:]]*git[[:blank:]]*xflow[[:cntrl:]]*([^#]*)## ]] || return 1;
+    help_content="${BASH_REMATCH[1]}"
+    echo -e "$(colorize_markdown "${help_header}\n${help_content}")"
+}
+
+notice() {
+    trace "git-xflow, Copyright (C) 2016, Jérémy WALTHER (jeremy.walther@golflima.net)"
+    trace "This program comes with ABSOLUTELY NO WARRANTY; for details type 'git xflow -l'."
+    trace "This is free software, and you are welcome to redistribute it"
+    trace "under certain conditions; type 'git xflow -l' for details."
+    trace
+    trace "For help, type 'git xflow -h'."
+    trace "For more information, please visit: <https://github.com/golflima/git-xflow>."
 }
