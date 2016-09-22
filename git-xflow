@@ -52,7 +52,17 @@ subcommand_help() {
 
 # Called by: 'git xflow init'
 subcommand_init() {
-    local branch tpl
+    local confirm branch tpl
+    if gitxflow_is_initialized; then
+        info "This repo is already configured for git-xflow, current settings are:"
+        trace "Staging branch: '${STAGING_BRANCH}'"
+        trace "Review templates: '${GITXFLOW_TEMPLATE_REVIEW}'"
+        trace "Patch templates: '${GITXFLOW_TEMPLATE_PATCH}'"
+        question "Are you sure you want to reset all settings? [y/n] "
+        read confirm
+        [[ "${confirm}" != "y" ]] && end "Current settings kept."
+        info "Current settings reset."
+    fi
     # Cleaning previous settings
     git config --remove-section gitxflow.branch 2>/dev/null
     git config --remove-section gitxflow.template 2>/dev/null
@@ -421,10 +431,10 @@ subcommandaction_version_update() {
 
 main() {
     # Import shFlags functions
-    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+    . "${GITXFLOW_DIR}/lib/shflags/src/shflags" || die "Please run 'git submodule init' then 'git submodule update'."
 
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common" || die "Please run 'git submodule init' then 'git submodule update'."
     gitflow_load_settings
     require_gitflow_initialized
 

@@ -140,7 +140,7 @@ parse_template() {
     fi
     parsed_template="$(<"${template_file}")"
     # Handle variable tags: '<%= variablename %>'
-    while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*).*%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*)[[:blank:][:cntrl:]]*%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\${$value}\"")"
