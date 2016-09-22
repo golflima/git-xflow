@@ -42,6 +42,6 @@ $GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>"
 [System.IO.Compression.ZipFile]::ExtractToDirectory($patchZip, $patchPath)
 
 # Delete removed files
-Remove-Item <%$
-    echo "${patch_diff}" | grep ^D | cut -f2 | sed 's/.*/&, /g'
+<%$
+    echo "${patch_diff}" | grep ^D | cut -f2 | sed 's/.*/Remove-Item &/g'
 %>
