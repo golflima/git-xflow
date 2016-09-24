@@ -165,6 +165,7 @@ action_review() {
     review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
     empty_flag output || review_name="$(get_flag output)"
     empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
+    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
     echo "${template_list}" | while read template ; do
         parse_template review "${template}" "${review_name}" ""
     done
@@ -337,6 +338,7 @@ subcommandaction_patch_make() {
     empty_flag output || patch_name="$(get_flag output)"
     trace "${patch_diff}"
     empty_flag template && template_list="${GITXFLOW_TEMPLATE_PATCH}" || template_list="$(get_flag template)"
+    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
     echo "${template_list}" | while read template ; do
         parse_template patch "${template}" "${patch_name}" ""
     done

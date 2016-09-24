@@ -97,9 +97,7 @@ gitxflow_load_settings() {
 }
 
 gitxflow_is_initialized() {
-    [[ "${STAGING_BRANCH}" != "" ]] \
-    && [[ "${GITXFLOW_TEMPLATE_REVIEW}" != "" ]] \
-    && [[ "${GITXFLOW_TEMPLATE_PATCH}" != "" ]]
+    [[ "${STAGING_BRANCH}" != "" ]]
 }
 
 # Save default settings that can be overridden using git config
