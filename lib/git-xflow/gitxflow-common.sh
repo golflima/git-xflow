@@ -137,6 +137,11 @@ parse_template() {
         return 1;
     fi
     parsed_template="$(<"${template_file}")"
+    # Handle comment tags: '<%# comment #%>'
+    while [[ "${parsed_template}" =~ (<%#([^#]*)#%>) ]]; do
+        lhs="${BASH_REMATCH[1]}"
+        parsed_template="${parsed_template//"${lhs}"/}"
+    done
     # Handle variable tags: '<%= variablename %>'
     while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*)[[:blank:][:cntrl:]]*%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
@@ -157,11 +162,6 @@ parse_template() {
             warn "Template '${template_name}': error when evaluating not echoed command tag: '${lhs}'."
             return 11;
         fi
-        parsed_template="${parsed_template//"${lhs}"/}"
-    done
-    # Handle comment tags: '<%# comment #%>'
-    while [[ "${parsed_template}" =~ (<%#([^#]*)#%>) ]]; do
-        lhs="${BASH_REMATCH[1]}"
         parsed_template="${parsed_template//"${lhs}"/}"
     done
     # Handle echoed command tags: '<%$ command %>'
