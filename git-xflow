@@ -44,9 +44,9 @@ readonly GITXFLOW_ARGS="$@"
 ##### Direct '<subcommand>' handlers #####
 
 # Displays help (global or specific to a given <action>).
-# Called by: 'git xflow help <action>'
+# Called by: 'git xflow help <optional: action> <optional: name>'
 subcommand_help() {
-    usage $action
+    usage "${action}" "${name}"
     exit 0;
 }
 
@@ -179,7 +179,7 @@ action_patch() {
     [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && branch_from="${DEVELOP_BRANCH}"
     [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && branch_from="${MASTER_BRANCH}"
     [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
-    subcommandaction_patch_make patch make "${branch_from}" "${branch_to}"
+    subcommandaction_patch_make patch make "${branch_from}..${branch_to}"
 }
 
 
@@ -324,13 +324,15 @@ subcommandaction_master_pull() {
 
 ##### 'patch <action>' handlers #####
 
-# Called by: 'git xflow patch make <from> <to>'
+# Called by: 'git xflow patch make <from>..<to>'
 subcommandaction_patch_make() {
-    local patch_from patch_to patch_diff patch_name template_list template
-    patch_from="$3"; require_argument "patch_from" "${subcommand}"
-    patch_to="$4"; require_argument "patch_to" "${subcommand}"
+    local patch_from patch_to patch_mode patch_diff patch_name template_list template
+    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage patch make && echo && die "Argument <from>..<to> is missing or malformed !"
+    patch_from="${BASH_REMATCH[1]}";
+    patch_to="${BASH_REMATCH[3]}";
+    patch_mode="${BASH_REMATCH[2]}";
     info "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
-    patch_diff=`git diff --name-status ${patch_from}..${patch_to}`
+    patch_diff=`git diff --name-status ${patch_from}${patch_mode}${patch_to}`
     patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
     empty_flag output || patch_name="$(get_flag output)"
     trace "${patch_diff}"
@@ -342,14 +344,14 @@ subcommandaction_patch_make() {
     end
 }
 
-# Called by: 'git xflow patch tags <optional: from> <optional: to>'
+# Called by: 'git xflow patch tags <optional: from>..<optional: to>'
 subcommandaction_patch_tags() {
-    local patch_from_tag patch_to_tag
-    [[ -z "$3$4" ]] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
-    [[ -z "$3" || -z "$4" ]] && usage $2 && echo && die "Missing <to> or <from> argument !"
-    patch_from_tag=`git tag | head -n $3 | tail -n 1`
-    patch_to_tag=`git tag | head -n $4 | tail -n 1`
-    subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
+    local patch_from patch_to patch_mode patch_from_tag patch_to_tag
+    [[ -z "${name}" ]] && subcommandaction_patch_make patch make `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
+    [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage patch tags && echo && die "Argument <from>..<to> is missing or malformed !"
+    patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    subcommandaction_patch_make patch make "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
 }
 
 # Called by: 'git xflow patch showtags'
@@ -482,9 +484,9 @@ main() {
         trace "OK"
     fi
 
-    [[ "$(type -t subcommand_${subcommand})" = "function" ]] && subcommand_${subcommand} $*
-    [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${name}" $*
-    [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} $*
+    [[ "$(type -t subcommand_${subcommand})" = "function" ]] && subcommand_${subcommand} "${subcommand}" "${action}" "${name}"
+    [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${action}" "${name}"
+    [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} "${subcommand}" "${action}" "${name}"
 
     if has_flag no_forward; then
         die "Not supported operation. Try 'git xflow help'."
