@@ -39,7 +39,8 @@ CYAN=$'\033[0;36m';         LIGHT_CYAN=$'\033[1;36m'
 LIGHT_GRAY=$'\033[0;37m';   WHITE=$'\033[1;37m'
 
 # Fixes for old version of 'sed' (Mac OS X ...)
-TAB=$'\t';                  LF=$'\n' 
+TAB=$'\t';                  LF=$'\n'
+
 
 
 ############## General functions ##############
@@ -179,7 +180,6 @@ parse_template() {
     if [[ "${parsed_template}" =~ (<%:((([^%]|%[^>]))*)%>) ]]; then
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
-        trace "${value}"
         eval "${value}" > "${generated_file_name}${generated_file_suffix}"
         if [[ $? = 0 ]]; then
             info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
