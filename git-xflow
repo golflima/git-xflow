@@ -152,17 +152,17 @@ action_merged() {
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "${subcommand}"
-    local branch_name compare_to_branch repo_name branch_diff files_diff review_name template_list template
-    [[ -z "$name" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && compare_to_branch="${DEVELOP_BRANCH}"
-    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && compare_to_branch="${MASTER_BRANCH}"
-    [[ -z "$compare_to_branch" ]] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
-    branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
+    local review_to review_from review_repository review_code_diff review_files_diff review_name template_list template
+    [[ -z "$name" ]] && review_to="${subcommand}" || review_to="${subcommand}/${name}"
+    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && review_from="${DEVELOP_BRANCH}"
+    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && review_from="${MASTER_BRANCH}"
+    [[ -z "$review_from" ]] && die "Branch '${review_to}' is not supported by git-xflow for reviews !"
+    review_repository="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${review_repository}' from '${review_from}' to '${review_to}' ..."
+    review_code_diff=`git diff ${review_from}..${review_to} --src-prefix=${review_from}: --dst-prefix=${review_to}: \
         --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
-    files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
-    review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
+    review_files_diff=`git diff ${review_from}..${review_to} --name-status`
+    review_name="review_${review_repository}_from_${review_from}_to_${review_to}"
     empty_flag output || review_name="$(get_flag output)"
     empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
     [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
