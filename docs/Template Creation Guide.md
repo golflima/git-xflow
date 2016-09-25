@@ -17,7 +17,7 @@ Templates are used when thse *git-xflow* commands are executed:
   * `git xflow patch tags FROM..TO`
   * `git xflow SUBCOMMAND patch NAME`
 * Reviews:
-  * `git xflow SuBCOMMAND review NAME`
+  * `git xflow SUBCOMMAND review NAME`
 
 
 
@@ -27,3 +27,127 @@ How to configure used templates?
 There are two ways to configure templates used by *git-xflow*:
 
 * Once for the repository, by typing command: `git xflow init`
+* Only for the current command, by appending to it option `t`: `-t TEMPLATE`
+
+
+
+Where to place templates?
+-------------------------
+
+*git-xflow* looks for templates only in following folders, by order of priority:
+
+1. Absolute or relative path (from current working directory): `TEMPLATE`
+2. `.git/git-xflow/templates/COMMAND/TEMPLATE`, where COMMAND is `patch` or `review`
+3. Search for `TEMPLATE` relative to root path of current git repository
+4. `GIT_XFLOW_INSTALL/templates/COMMAND/TEMPLATE`, where GIT_XFLOW_INSTALL is
+   this *git-xflow* installation directory, and COMMAND is `patch` or `review`
+
+
+
+How to write a template?
+------------------------
+
+When *git-xflow* uses a template, it creates a new file with all content of the
+used template. Of course, it is possible to add dynamic content to the output.
+
+To achieve that, *git-xflow* interprets several tags:
+
+
+
+### Comment tags
+
+> Write comments in your template.
+>
+> Comments won't be writen in output file,
+> and all other tags contained in them won't be interpreted.
+
+Opening tag: `<%#`
+
+Closing tag: `%#>`
+
+Example:
+
+```
+<%#
+    A sample comment ...
+    The following tag is commented, so it won't be executed:
+    <% echo test %>
+%#>
+```
+
+
+
+### Variable tags
+
+> Write the content of a variable directly in-place in the output file.
+
+Opening tag: `<%=`
+
+Closing tag: `%>`
+
+Example:
+
+```sh
+############## Installer configuration ##############
+
+readonly PATCH_NAME="<%= patch_name %>"
+readonly PATCH_DIFF="<%= patch_diff %>"
+readonly GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>"
+```
+
+
+
+### Not echoed command tags
+
+> Execute *bash* commands that won't be writen in the output file.
+>
+> Usefull for variable affectation.
+
+Opening tag: `<%@`
+
+Closing tag: `%>`
+
+Example:
+
+```
+<%@ generated_file_suffix=".myextension" %>
+```
+
+
+
+### Echoed command tags
+
+> Execute *bash* commands that will be writen in-place in the output file.
+
+Opening tag: `<%$`
+
+Closing tag: `%>`
+
+Example:
+
+```sh
+# Delete removed files
+<%$
+    echo "${patch_diff}" | grep ^D | cut -f2 | sed 's/.*/Remove-Item &/g'
+%>
+```
+
+
+
+### To-file command tags
+
+> Execute *bash* commands that will be writen directly to the output file.
+>
+> Usefull for writing binary content (such as zip ...).
+
+Opening tag: `<%:`
+
+Closing tag: `%>`
+
+Example:
+
+```sh
+<%: 
+    git archive --format=zip -9 ${patch_to} $(echo "${patch_diff}" | awk '{ if [[ $1 != "D" ]] printf("\"%s\"\n", substr($0,3)) }')
+%>
+```
