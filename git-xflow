@@ -152,24 +152,12 @@ action_merged() {
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "${subcommand}"
-    local review_to review_from review_repository review_code_diff review_files_diff review_name template_list template
+    local review_to review_from
     [[ -z "$name" ]] && review_to="${subcommand}" || review_to="${subcommand}/${name}"
     [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && review_from="${DEVELOP_BRANCH}"
     [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && review_from="${MASTER_BRANCH}"
     [[ -z "$review_from" ]] && die "Branch '${review_to}' is not supported by git-xflow for reviews !"
-    review_repository="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-    info "Reviewing '${review_repository}' from '${review_from}' to '${review_to}' ..."
-    review_code_diff=`git diff ${review_from}..${review_to} --src-prefix=${review_from}: --dst-prefix=${review_to}: \
-        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
-    review_files_diff=`git diff ${review_from}..${review_to} --name-status`
-    review_name="review_${review_repository}_from_${review_from}_to_${review_to}"
-    empty_flag output || review_name="$(get_flag output)"
-    empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
-    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
-    echo "${template_list}" | while read template ; do
-        parse_template review "${template}" "${review_name}" ""
-    done
-    end
+    subcommandaction_review_do "review" "do" "${review_from}..${review_to}"
 }
 
 # Called by: 'git xflow <subcommand> patch <optional: name>'
@@ -180,7 +168,7 @@ action_patch() {
     [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && branch_from="${DEVELOP_BRANCH}"
     [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && branch_from="${MASTER_BRANCH}"
     [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
-    subcommandaction_patch_make patch make "${branch_from}..${branch_to}"
+    subcommandaction_patch_make "patch" "make" "${branch_from}..${branch_to}"
 }
 
 
@@ -334,12 +322,37 @@ subcommandaction_master_pull() {
 
 
 
+##### 'review <action>' handlers #####
+
+# Called by: 'git xflow review do <from>..<to>'
+subcommandaction_review_do() {
+    local review_to review_from review_mode review_repository review_code_diff review_files_diff review_name template_list template
+    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "review" "do" && echo && die "Argument <from>..<to> is missing or malformed !"
+    review_from="${BASH_REMATCH[1]}";
+    review_to="${BASH_REMATCH[3]}";
+    review_mode="${BASH_REMATCH[2]}";
+    review_repository="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${review_repository}' from '${review_from}' to '${review_to}' ..."
+    review_code_diff=`git diff ${review_from}${review_mode}${review_to} --src-prefix=${review_from}: --dst-prefix=${review_to}: \
+        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
+    review_files_diff=`git diff ${review_from}${review_mode}${review_to} --name-status`
+    review_name="review_${review_repository}_from_${review_from}_to_${review_to}"
+    empty_flag output || review_name="$(get_flag output)"
+    empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
+    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
+    echo "${template_list}" | while read template ; do
+        parse_template review "${template}" "${review_name}" ""
+    done
+    end
+}
+
+
 ##### 'patch <action>' handlers #####
 
 # Called by: 'git xflow patch make <from>..<to>'
 subcommandaction_patch_make() {
     local patch_from patch_to patch_mode patch_diff patch_name template_list template
-    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage patch make && echo && die "Argument <from>..<to> is missing or malformed !"
+    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "patch" "make" && echo && die "Argument <from>..<to> is missing or malformed !"
     patch_from="${BASH_REMATCH[1]}";
     patch_to="${BASH_REMATCH[3]}";
     patch_mode="${BASH_REMATCH[2]}";
@@ -360,11 +373,11 @@ subcommandaction_patch_make() {
 # Called by: 'git xflow patch tags <optional: from>..<optional: to>'
 subcommandaction_patch_tags() {
     local patch_from patch_to patch_mode patch_from_tag patch_to_tag
-    [[ -z "${name}" ]] && subcommandaction_patch_make patch make `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
+    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
     [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage patch tags && echo && die "Argument <from>..<to> is missing or malformed !"
     patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
     patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
-    subcommandaction_patch_make patch make "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
+    subcommandaction_patch_make "patch" "make" "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
 }
 
 # Called by: 'git flow patch apply <name>'

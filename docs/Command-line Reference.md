@@ -13,7 +13,9 @@ Available SUBCOMMANDs are:
 * `develop`         : Manage *develop* branch.
 * `release`         : Manage release branches.
 * `hotfix`          : Manage hotfix branches.
+* `tag`             : Manage tags.
 * `master`          : Manage *master* branch.
+* `review`          : Perform reviews.
 * `patch`           : Build and apply patches.
 * `help`            : Show help information.
 * `version`         : Show version information and check for updates.
@@ -140,6 +142,16 @@ Available ACTIONs are:
 * `pull`            : Pull *master* from *origin*.
 * `pull NAME`       : Pull tag NAME from *origin*.
 * `log`             : Display commits history of *master* from *origin*.
+
+
+
+## git xflow review
+
+Usage: `git xflow review ACTION`
+
+Available ACTIONs are:
+
+* `do FROM..TO`     : Review changes between branch/tag/commit FROM and TO.
 
 
 
