@@ -305,6 +305,17 @@ subcommandaction_hotfix_close() {
 
 
 
+##### 'tag <action>' handlers #####
+
+# Called by: 'git xflow tag list'
+subcommandaction_tag_list() {
+    info "Ordered list of tags as used by git-xflow ..."
+    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
+    end
+}
+
+
+
 ##### 'master <action>' handlers #####
 
 # Called by: 'git xflow master pull'
@@ -354,13 +365,6 @@ subcommandaction_patch_tags() {
     patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
     patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
     subcommandaction_patch_make patch make "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
-}
-
-# Called by: 'git xflow patch showtags'
-subcommandaction_patch_showtags() {
-    info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
-    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
-    end
 }
 
 # Called by: 'git flow patch apply <name>'
