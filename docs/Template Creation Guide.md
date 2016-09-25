@@ -147,7 +147,7 @@ Closing tag: `%>`
 Example:
 
 ```sh
-<%: 
+<%:
     git archive --format=zip -9 ${patch_to} $(echo "${patch_diff}" | awk '{ if [[ $1 != "D" ]] printf("\"%s\"\n", substr($0,3)) }')
 %>
 ```
