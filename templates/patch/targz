@@ -29,7 +29,7 @@
     This template is used when 'git xflow patch make <from> <to>' is called.
     It generates a .tar.gz archive file containing all added and modified files by the patch.
 
-#%><%@ 
+#%><%@
     generated_file_suffix=".tar.gz"
 %><%:
     git archive --format=tar.gz -9 ${patch_to} $(echo "${patch_diff}" | awk '{ if [[ $1 != "D" ]] printf("\"%s\"\n", substr($0,3)) }')

@@ -176,7 +176,7 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle to-file command tags: '<%: command %>'
-    while [[ "${parsed_template}" =~ (<%:([^%]*)%>) ]]; do
+    if [[ "${parsed_template}" =~ (<%:([^%]*)%>) ]]; then
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         eval "${value}" > "${generated_file_name}${generated_file_suffix}"
@@ -187,7 +187,7 @@ parse_template() {
             warn "Template '${template_name}': error when evaluating to-file command tag: '${lhs}'."
             return 13;
         fi
-    done
+    fi
     if [[ ! -z "${generated_file_name}${generated_file_suffix}" ]]; then
         echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
         info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
