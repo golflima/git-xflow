@@ -138,7 +138,7 @@ parse_template() {
     fi
     parsed_template="$(<"${template_file}")"
     # Handle comment tags: '<%# comment #%>'
-    while [[ "${parsed_template}" =~ (<%#([^#]*)#%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%#((([^#]|#[^%]|#%[^>]))*)#%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         parsed_template="${parsed_template//"${lhs}"/}"
     done
@@ -154,7 +154,7 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle not echoed command tags: '<%@ command %>'
-    while [[ "${parsed_template}" =~ (<%@([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%@((([^%]|%[^>]))*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         eval "${value}"
@@ -165,7 +165,7 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/}"
     done
     # Handle echoed command tags: '<%$ command %>'
-    while [[ "${parsed_template}" =~ (<%\$([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%\$((([^%]|%[^>]))*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval "${value}")"
@@ -176,9 +176,10 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle to-file command tags: '<%: command %>'
-    if [[ "${parsed_template}" =~ (<%:([^%]*)%>) ]]; then
+    if [[ "${parsed_template}" =~ (<%:((([^%]|%[^>]))*)%>) ]]; then
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
+        trace "${value}"
         eval "${value}" > "${generated_file_name}${generated_file_suffix}"
         if [[ $? = 0 ]]; then
             info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
