@@ -129,7 +129,10 @@ Usage: `git xflow tag ACTION`
 Available ACTIONs are:
 
 * `list`            : Display the ordered list of tags as used by *git-xflow*.
-
+* `review`          : Review changes between previons tag (n-1) and latest tag (n).
+* `review FROM..TO` : Review changes between tag n°FROM and tag n°TO (see `git xflow tag list` for n°).
+* `patch`           : Build a diff-patch from previons tag (n-1) to latest tag (n).
+* `patch FROM..TO`  : Build a diff-patch from tag n°FROM to tag n°TO (see `git xflow tag list` for n°).
 
 
 ## git xflow master
@@ -162,9 +165,6 @@ Usage: `git xflow patch ACTION`
 Available ACTIONs are:
 
 * `make FROM..TO`   : Build a diff-patch from branch or tag FROM to branch or tag TO.
-* `showtags`        : Display list of tags as used by `git xflow patch tags FROM TO`.
-* `tags`            : Build a diff-patch from previons tag (n-1) to latest tag (n).
-* `tags FROM..TO`   : Build a diff-patch from tag n°FROM to tag n°TO (see `git xflow tag list` for n°).
 * `apply NAME`      : Apply patch NAME in current working directory.
 
 
