@@ -104,7 +104,7 @@ action_close() {
     subcommandaction_${subcommand}_${action} "${name}" $*
     
     if git_local_branch_exists ${subcommand}/${name}; then
-        assertok "git push $ORIGIN :${subcommand}/${name}" ${LINENO}
+        assertok "git push ${ORIGIN} :${subcommand}/${name}" ${LINENO}
     fi
     end
 }
@@ -116,7 +116,7 @@ action_cancel() {
     info "Cancelling branch '${subcommand}/${name}' ..."
     [[ $(git_current_branch) = ${subcommand}/${name} ]] && assertok "git checkout ${DEVELOP_BRANCH}" ${LINENO}
     git_local_branch_exists ${subcommand}/${name} && assertok "git branch -D ${subcommand}/${name}" ${LINENO}
-    git_remote_branch_exists ${subcommand}/${name} && assertok "git branch -D $ORIGIN/${subcommand}/${name}" ${LINENO}
+    git_remote_branch_exists ${subcommand}/${name} && assertok "git branch -D ${ORIGIN}/${subcommand}/${name}" ${LINENO}
     end
 }
 
@@ -140,10 +140,10 @@ action_merged() {
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
-        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short ${branch} | head -n 1`
         set -- $(echo ${commit} | awk -F"|" '{print $1,$2,$3,$4,$5}')
         contained=`git branch -r --contains $1 | grep ${branch_name}`
-        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
+        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  ${branch}${NC}"
     done | sort -r
     echo
     end
@@ -194,7 +194,7 @@ subcommandaction_staging_merge() {
     require_clean_working_tree
     info "Merging '${FEATURE_PREFIX}${name}' into ${STAGING_BRANCH} ..."
     git_local_branch_exists feature/${name} || assertok "git flow feature track ${name}" ${LINENO}
-    if git_remote_branch_exists ${STAGING_BRANCH}; then
+    if git_remote_branch_exists ${ORIGIN}/${STAGING_BRANCH}; then
         assertok "git checkout ${STAGING_BRANCH}" ${LINENO}
     else
         die "Staging branch does not exist, please run 'git xflow staging reset' first."
