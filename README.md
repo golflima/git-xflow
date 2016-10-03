@@ -36,11 +36,11 @@ Install git-xflow
 *git xflow* runs on Windows, Linux, and Mac OS. In facts, it runs everywhere *git* is able to run.
 
 1. [Install git-flow](https://github.com/nvie/gitflow/wiki/Installation)
-2. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) git-xflow, then unzip files ...
-3. Put files into a PATH listed folded ([see details for Windows and Linux](https://en.wikipedia.org/wiki/PATH_(variable)))
-4. For Linux only, make *gix-flow* file executable with:
+1. Clone or [download](https://github.com/golflima/git-xflow/archive/master.zip) git-xflow, then unzip files ...
+1. Put files into a PATH listed folded ([see details for Windows and Linux](https://en.wikipedia.org/wiki/PATH_(variable)))
+1. For Linux only, make *gix-flow* file executable with:
    * `chmod +x git-xflow`
-5. Test it, type in a terminal : `git xflow`
+1. Test it, type in a terminal : `git xflow`
 
 *NB : File `gitflow-common` is taken from [git-flow](https://raw.githubusercontent.com/nvie/gitflow/develop/gitflow-common) directly,
 you don't have to copy it if you use latest version of git-flow and have put file `git-xflow` in the same folder as git-flow files.*
@@ -61,20 +61,32 @@ Quick overview of major git-xflow features
 
 1. Start working on a new feature *A* by typing:
    * `git xflow feature start A`
-2. Do some work and commit your changes with: `git commit`
-3. Start working on another new feature *B*:
+1. Do some work and commit your changes with: `git commit`
+1. Start working on another new feature *B*:
    * `git xflow feature start B`
-4. Do some work and commit your changes with: `git commit`
-5. Send your changes to *staging* branch, only for feature *A*, by typing:
+1. Do some work and commit your changes with: `git commit`
+1. Send your changes to *staging* branch, only for feature *A*, by typing:
    * `git xflow staging reset A` *(this will reset staging branch)*
-6. Then, send your changes from feature *B* to *staging* by typing:
+1. Then, send your changes from feature *B* to *staging* by typing:
    * `git xflow staging merge B`
-7. Finish your work on your features by typing:
+1. Review changes of feature *A* with a HTML file by typing:
+   * `git xflow feature review A -t html`
+1. Review changes of feature *B* with *less* file by typing:
+   * `git xflow feature review B -t less`
+1. Finish your work on your features by typing:
    * `git xflow feature close A B`
-8. Eventually, reset your *staging* branch to a clean state (*develop*), by typing:
+1. Eventually, reset your *staging* branch to a clean state (*develop*), by typing:
    * `git xflow staging reset`
-
-
+1. Do a release *1.0.0* for your new features by typing:
+   * `git xflow release start 1.0.0`
+1. Share your work on this release *1.0.0* with your peers by typing:
+   * `git xflow release publish 1.0.0`
+1. Start working on a shared release *1.0.0* by typing:
+   * `git xflow release pull 1.0.0`
+1. Finish and publish release *1.0.0* by typing:
+   * `git xflow release close 1.0.0`
+1. Build a patch to deploy changed files on your remote server which does not have Git by typing:
+   * `git xflow tag patch` *(will make a patch from previous published tag to the new one)*
 
 __________________________________________________
 
