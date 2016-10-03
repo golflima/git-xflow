@@ -55,6 +55,27 @@ Command-line reference
 See [Command-line Reference.md](docs/Command-line Reference.md) in docs folder.
 
 
+
+Quick overview of major git-xflow features
+------------------------------------------
+
+1. Start working on a new feature *A* by typing:
+   * `git xflow feature start A`
+2. Do some work and commit your changes with: `git commit`
+3. Start working on another new feature *B*:
+   * `git xflow feature start B`
+4. Do some work and commit your changes with: `git commit`
+5. Send your changes to *staging* branch, only for feature *A*, by typing:
+   * `git xflow staging reset A` *(this will reset staging branch)*
+6. Then, send your changes from feature *B* to *staging* by typing:
+   * `git xflow staging merge B`
+7. Finish your work on your features by typing:
+   * `git xflow feature close A B`
+8. Eventually, reset your *staging* branch to a clean state (*develop*), by typing:
+   * `git xflow staging reset`
+
+
+
 __________________________________________________
 
 Licence terms
