@@ -197,12 +197,7 @@ subcommandaction_staging_merge() {
     if git_remote_branch_exists ${STAGING_BRANCH}; then
         assertok "git checkout ${STAGING_BRANCH}" ${LINENO}
     else
-        if git_local_branch_exists staging; then
-            assertok "git checkout ${FEATURE_PREFIX}${name}" ${LINENO}
-            assertok "git branch -D ${STAGING_BRANCH}" ${LINENO}
-        fi
-        assertok "git checkout -b ${STAGING_BRANCH} ${DEVELOP_BRANCH}" ${LINENO}
-        assertok "git branch --set-upstream-to=${ORIGIN}/${STAGING_BRANCH}" ${LINENO}
+        die "Staging branch does not exist, please run 'git xflow staging reset' first."
     fi
     assertok "git pull" ${LINENO}
     assertok "git merge ${FEATURE_PREFIX}${name}" ${LINENO}
