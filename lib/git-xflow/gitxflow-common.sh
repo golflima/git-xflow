@@ -73,6 +73,7 @@ require_argument() { [[ -z "$(eval "echo \$$1")" ]] && usage $2 && echo && die "
 # Ends the execution if given command $1 returns an error and displays debug information. Usage: 'assertok "command" $LINENO'
 assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v${GITXFLOW_VERSION}, line $2, following command failed (err: $?):" && die "$1"; }
 
+# Remove all colors, called when option --no-color (-c) is used
 remove_color() {
     NC=; BLACK=; DARK_GRAY=; RED=; LIGHT_RED=; GREEN=; LIGHT_GREEN=;
     BROWN=; YELLOW=; BLUE=; LIGHT_BLUE=; PURPLE=; LIGHT_PURPLE=;
@@ -97,6 +98,7 @@ gitxflow_load_settings() {
     readonly HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
 }
 
+# Checks if git-xflow is correctly initialized for current git repository
 gitxflow_is_initialized() {
     [[ "${STAGING_BRANCH}" != "" ]]
 }
@@ -114,6 +116,9 @@ gitxflow_save_default_settings() {
     assertok "git config --add gitxflow.template.patch templates/patch/tar"
     assertok "git config --add gitxflow.template.patch templates/patch/targz"
 }
+
+# Escape git branch names for use in file names
+file_escape () { echo "$(echo "$1" | sed -e 's/[^[:alnum:]._-]/-/g')"; }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
 parse_template() {
