@@ -118,7 +118,7 @@ gitxflow_save_default_settings() {
 }
 
 # Escape git branch names for use in file names
-file_escape () { echo "$(echo "$1" | sed -e 's/[^[:alnum:]._-]/-/g')"; }
+file_escape () { echo "${1//[^[:alnum:]._-]/-}"; }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
 parse_template() {
