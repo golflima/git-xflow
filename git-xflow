@@ -481,9 +481,9 @@ main() {
     DEFINE_boolean 'help' false 'Show help' 'h'
 
     # Load command flags for git-xflow
-    DEFINE_string 'subcommand' "$1" 'git xflow <subcommand> <action> <name>' 's'
-    DEFINE_string 'action' "$2" 'git xflow <subcommand> <action> <name>' 'a'
-    DEFINE_string 'name' "$3" 'git xflow <subcommand> <action> <name>' 'n'
+    DEFINE_string 'subcommand' "$([[ "$1" =~ ^- ]] && echo || echo "$1")" 'git xflow <subcommand> <action> <name>' 's'
+    DEFINE_string 'action' "$([[ "$2" =~ ^- ]] && echo || echo "$2")" 'git xflow <subcommand> <action> <name>' 'a'
+    DEFINE_string 'name' "$([[ "$3" =~ ^- ]] && echo || echo "$3")" 'git xflow <subcommand> <action> <name>' 'n'
 
     # Load specific command flags for git-xflow
     DEFINE_string 'template' '' 'Template file to use' 't'
