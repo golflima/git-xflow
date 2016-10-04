@@ -459,7 +459,6 @@ subcommandaction_version_update() {
 # 5. If no suitable handler is found, try to call git-flow or exit
 
 main() {
-    false
     # Import shFlags functions
     . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
