@@ -30,7 +30,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_DIR="$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")"
+readonly GITXFLOW_DIR="$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")"
 readonly DOT_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
 readonly GITXFLOW_HOOK="${DOT_GIT_DIR}/git-xflow/hooks/$1-$2"
 
