@@ -459,16 +459,20 @@ subcommandaction_version_update() {
 # 5. If no suitable handler is found, try to call git-flow or exit
 
 main() {
+    false
     # Import shFlags functions
-    . "${GITXFLOW_DIR}/lib/shflags/src/shflags" || die "Please run 'git submodule init' then 'git submodule update'."
+    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common" || die "Please run 'git submodule init' then 'git submodule update'."
+    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update'."; exit 1; fi
     gitflow_load_settings
     require_gitflow_initialized
 
     # Import common functions of git-xflow, and load its settings
     . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
+    if [[ $? > 0 ]]; then echo "Please reinstall git-xflow in '${GITXFLOW_DIR}' from <https://github.com/golflima/git-xflow>."; exit 1; fi
     gitxflow_load_settings
 
     [[ $# = 0 ]] && notice && exit 1;
