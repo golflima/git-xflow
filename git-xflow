@@ -462,11 +462,11 @@ main() {
     false
     # Import shFlags functions
     . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
-    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update'."; exit 1; fi
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
     . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
-    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update'."; exit 1; fi
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
     gitflow_load_settings
     require_gitflow_initialized
 

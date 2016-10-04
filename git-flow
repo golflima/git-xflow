@@ -38,6 +38,7 @@ readonly GITXFLOW_HOOK="${DOT_GIT_DIR}/git-xflow/hooks/$1-$2"
 
 # Import common functions of git-xflow
 . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
+if [[ $? > 0 ]]; then echo "Please reinstall git-xflow in '${GITXFLOW_DIR}' from <https://github.com/golflima/git-xflow>."; exit 1; fi
 
 # Run hook, if available
 if [[ -f "${GITXFLOW_HOOK}" ]]; then
@@ -47,4 +48,5 @@ if [[ -f "${GITXFLOW_HOOK}" ]]; then
 fi
 
 # Run gitflow
+if [[ ! -f "${GITXFLOW_DIR}/lib/gitflow/git-flow" ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 sh "${GITXFLOW_DIR}/lib/gitflow/git-flow $*"
