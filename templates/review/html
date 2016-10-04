@@ -64,12 +64,12 @@
                 -e "s/^D${TAB}\(.*\)$/<p class=\"f d\"><a href=\"#\1\">&<\/a><\/p><br \/>/g" %>
         <h2>Content</h2><div>
         <%$  echo "${review_code_diff}" | sed -e "s/</\&lt;/g" -e "s/>/\&gt;/g" -e "s/^~$/<br \/>/" \
-                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${review_from} \1 | ${review_to} \2<\/h4><br \/>\
+                -e "s/^@@ -\(.*\) +\(.*\) @@/<br \/><h4>lines: ${review_from//\//\\/} \1 | ${review_to//\//\\/} \2<\/h4><br \/>\
                     /g" \
                 | sed -e "s/^-\(.*\)$/<p class=\"d\">\1<\/p>/g" \
                 -e "s/^+\(.*\)$/<p class=\"a\">\1<\/p>/g" \
                 -e "s/^ \(.*\)$/<p class=\"u\">\1<\/p>/g" \
-                -e "s/^\(diff --git ${review_from}:\(.*\) ${review_to}:.*\)$/<br \/><\/div><h3><a id=\"\2\" href=\"#top\">\1<\/a><\/h3><div class=\"c\">/g" \
+                -e "s/^\(diff --git ${review_from//\//\\/}:\(.*\) ${review_to//\//\\/}:.*\)$/<br \/><\/div><h3><a id=\"\2\" href=\"#top\">\1<\/a><\/h3><div class=\"c\">/g" \
                 | sed -e "s/^\([^< -+~@].*\)$/<p class=\"s\">\1<\/p>/g" %>
         </div>
     </body>
