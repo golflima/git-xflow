@@ -118,7 +118,20 @@ gitxflow_save_default_settings() {
 }
 
 # Escape git branch names for use in file names
-file_escape () { echo "${1//[^[:alnum:]._-]/-}"; }
+file_escape() { echo "${1//[^[:alnum:]._-]/-}"; }
+
+# Call a third-party program to open/execute given file. Usage: 'file_exec <filename>'
+file_exec() {
+    [[ -z "$1" ]] && die "Missing filename."
+    [[ -f "$1" ]] || return 1;
+    [[ "$1" =~ .*\.([[:alnum:]_-]+) ]] || return 2;
+    local file_extension file_application
+    file_extension="${BASH_REMATCH[1]}"
+    file_application="$(git config --get gitxflow.exec.${file_extension})"
+    [[ -z "${file_application}" ]] && return 3;
+    [[ -f "${file_application}" ]] || return 4;
+    "${file_application}" "$1"
+}
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
 parse_template() {
@@ -188,6 +201,7 @@ parse_template() {
         eval "${value}" > "${generated_file_name}${generated_file_suffix}"
         if [[ $? = 0 ]]; then
             info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
+            file_exec "${generated_file_name}${generated_file_suffix}"
             return 0;
         else
             warn "Template '${template_name}': error when evaluating to-file command tag: '${lhs}'."
@@ -197,6 +211,7 @@ parse_template() {
     if [[ ! -z "${generated_file_name}${generated_file_suffix}" ]]; then
         echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
         info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
+        file_exec "${generated_file_name}${generated_file_suffix}"
     else
         info "Template '${template_name}': executed."
     fi
