@@ -434,12 +434,14 @@ subcommandaction_version_update() {
     echo -e "v${BROWN}${official_version}${NC}"
     last_pwd="$(pwd)"
     cd "${GITXFLOW_DIR}"
-    assertok "git pull --all"
-    assertok "git checkout ${version}"
-    assertok "git submodule init"
-    assertok "git submodule update"
-    cd "${last_pwd}"
-    end
+    sleep 1 \
+    && assertok "git pull --all" \
+    && assertok "git checkout ${version}" \
+    && assertok "git submodule init" \
+    && assertok "git submodule update" \
+    && cd "${last_pwd}" \
+    && end &
+    exit 0;
 }
 
 
