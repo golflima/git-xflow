@@ -1,0 +1,52 @@
+#!bin/bash
+# 
+# git-xflow -- An extension to git-flow, which automatize
+# some usual tasks related to repository operations.
+#
+# Feel free to contribute to this project at:
+#    https://github.com/golflima/git-xflow
+# git-flow : http://github.com/nvie/gitflow
+#
+# Copyright 2016 Jérémy Walther (jeremy.walther@golflima.net).
+#
+# This file is part of git-xflow.
+#
+# git-xflow is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# git-xflow is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with git-xflow. If not, see <http://www.gnu.org/licenses/>
+
+# This script enable the use of gitx-flow hooks with gitflow.
+# It is optional, and will use the gitflow version shipped with git-xflow.
+# If you want to disable it, simply delete it or rename it to 'git-flow.disabled'.
+
+############## Constants ##############
+
+readonly GITXFLOW_DIR="$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")"
+readonly DOT_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
+readonly GITXFLOW_HOOK="${DOT_GIT_DIR}/git-xflow/hooks/$1-$2"
+
+############## Main ###################
+
+# Import common functions of git-xflow
+. "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
+if [[ $? > 0 ]]; then echo "Please reinstall git-xflow in '${GITXFLOW_DIR}' from <https://github.com/golflima/git-xflow>."; exit 1; fi
+
+# Run hook, if available
+if [[ -f "${GITXFLOW_HOOK}" ]]; then
+    echo -en "${DARK_GRAY}Running hook: '${GITXFLOW_HOOK}' ... ${NC}"
+    sh "${GITXFLOW_HOOK}" "$@" || die "Failed ! (exit code: $?)"
+    trace "OK"
+fi
+
+# Run gitflow
+if [[ ! -f "${GITXFLOW_DIR}/lib/gitflow/git-flow" ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
+sh "${GITXFLOW_DIR}/lib/gitflow/git-flow $*"

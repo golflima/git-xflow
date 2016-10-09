@@ -26,8 +26,8 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.9.0+160920.2200"
-readonly GITXFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+readonly GITXFLOW_VERSION="0.10.0+161009.2300"
+readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
 
@@ -44,15 +44,25 @@ readonly GITXFLOW_ARGS="$@"
 ##### Direct '<subcommand>' handlers #####
 
 # Displays help (global or specific to a given <action>).
-# Called by: 'git xflow help <action>'
+# Called by: 'git xflow help <optional: action> <optional: name>'
 subcommand_help() {
-    usage $action
+    usage "${action}" "${name}"
     exit 0;
 }
 
 # Called by: 'git xflow init'
 subcommand_init() {
-    local branch tpl
+    local confirm branch tpl
+    if gitxflow_is_initialized; then
+        info "This repo is already configured for git-xflow, current settings are:"
+        trace "Staging branch: '${STAGING_BRANCH}'"
+        trace "Review templates: '${GITXFLOW_TEMPLATE_REVIEW}'"
+        trace "Patch templates: '${GITXFLOW_TEMPLATE_PATCH}'"
+        question "Are you sure you want to reset all settings? [y/n] "
+        read confirm
+        [[ "${confirm}" != "y" ]] && end "Current settings kept."
+        info "Current settings reset."
+    fi
     # Cleaning previous settings
     git config --remove-section gitxflow.branch 2>/dev/null
     git config --remove-section gitxflow.template 2>/dev/null
@@ -94,7 +104,7 @@ action_close() {
     subcommandaction_${subcommand}_${action} "${name}" $*
     
     if git_local_branch_exists ${subcommand}/${name}; then
-        assertok "git push $ORIGIN :${subcommand}/${name}" ${LINENO}
+        assertok "git push ${ORIGIN} :${subcommand}/${name}" ${LINENO}
     fi
     end
 }
@@ -106,7 +116,7 @@ action_cancel() {
     info "Cancelling branch '${subcommand}/${name}' ..."
     [[ $(git_current_branch) = ${subcommand}/${name} ]] && assertok "git checkout ${DEVELOP_BRANCH}" ${LINENO}
     git_local_branch_exists ${subcommand}/${name} && assertok "git branch -D ${subcommand}/${name}" ${LINENO}
-    git_remote_branch_exists ${subcommand}/${name} && assertok "git branch -D $ORIGIN/${subcommand}/${name}" ${LINENO}
+    git_remote_branch_exists ${ORIGIN}/${subcommand}/${name} && assertok "git branch -D ${ORIGIN}/${subcommand}/${name}" ${LINENO}
     end
 }
 
@@ -125,15 +135,15 @@ action_log() {
 action_merged() {
     require_argument "subcommand" "${subcommand}"
     local branch_name branch commit contained
-    [[ -z "$name" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    [[ -z "${name}" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
     info "Checking branches merged into '${branch_name}' ..."
     echo 
     echo -e "Merged\t| Commit hash\t| Commit date\t| Branch name"
     for branch in `git branch -r | grep -v HEAD`; do 
-        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short $branch | head -n 1`
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short ${branch} | head -n 1`
         set -- $(echo ${commit} | awk -F"|" '{print $1,$2,$3,$4,$5}')
         contained=`git branch -r --contains $1 | grep ${branch_name}`
-        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  $branch${NC}"
+        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  ${branch}${NC}"
     done | sort -r
     echo
     end
@@ -142,34 +152,25 @@ action_merged() {
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "${subcommand}"
-    local branch_name compare_to_branch repo_name branch_diff files_diff review_name template_list template
-    [[ -z "$name" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
-    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && compare_to_branch="${DEVELOP_BRANCH}"
-    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && compare_to_branch="${MASTER_BRANCH}"
-    [[ -z "$compare_to_branch" ]] && die "Branch '${branch_name}' is not supported by git-xflow for reviews !"
-    repo_name="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
-    info "Reviewing '${repo_name}' from '${compare_to_branch}' to '${branch_name}' ..."
-    branch_diff=`git diff ${compare_to_branch}..${branch_name} --src-prefix=${compare_to_branch}: --dst-prefix=${branch_name}: \
-        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
-    files_diff=`git diff ${compare_to_branch}..${branch_name} --name-status`
-    review_name="review_${repo_name}_from_${compare_to_branch}_to_${branch_name}"
-    empty_flag output || review_name="$(get_flag output)"
-    empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
-    echo "${template_list}" | while read template ; do
-        parse_template review "${template}" "${review_name}" ""
-    done
-    end
+    [[ "${subcommand}" = "tag" ]] && subcommandaction_tag_review "tag" "review" "${name}"
+    local review_to review_from
+    [[ -z "${name}" ]] && review_to="${subcommand}" || review_to="${subcommand}/${name}"
+    [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && review_from="${DEVELOP_BRANCH}"
+    [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && review_from="${MASTER_BRANCH}"
+    [[ -z "$review_from" ]] && die "Branch '${review_to}' is not supported by git-xflow for reviews !"
+    subcommandaction_review_do "review" "do" "${review_from}..${review_to}"
 }
 
 # Called by: 'git xflow <subcommand> patch <optional: name>'
 action_patch() {
     require_argument "subcommand" "${subcommand}"
+    [[ "${subcommand}" = "tag" ]] && subcommandaction_tag_patch "tag" "patch" "${name}"
     local branch_to branch_from
-    [[ -z "$name" ]] && branch_to="${subcommand}" || branch_to="${subcommand}/${name}"
+    [[ -z "${name}" ]] && branch_to="${subcommand}" || branch_to="${subcommand}/${name}"
     [[ -n "$(echo "${subcommand}" | grep "feature\|staging")" ]] && branch_from="${DEVELOP_BRANCH}"
     [[ -n "$(echo "${subcommand}" | grep "develop\|release\|hotfix")" ]] && branch_from="${MASTER_BRANCH}"
     [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
-    subcommandaction_patch_make patch make "${branch_from}" "${branch_to}"
+    subcommandaction_patch_make "patch" "make" "${branch_from}..${branch_to}"
 }
 
 
@@ -193,15 +194,10 @@ subcommandaction_staging_merge() {
     require_clean_working_tree
     info "Merging '${FEATURE_PREFIX}${name}' into ${STAGING_BRANCH} ..."
     git_local_branch_exists feature/${name} || assertok "git flow feature track ${name}" ${LINENO}
-    if git_remote_branch_exists ${STAGING_BRANCH}; then
+    if git_remote_branch_exists ${ORIGIN}/${STAGING_BRANCH}; then
         assertok "git checkout ${STAGING_BRANCH}" ${LINENO}
     else
-        if git_local_branch_exists staging; then
-            assertok "git checkout ${FEATURE_PREFIX}${name}" ${LINENO}
-            assertok "git branch -D ${STAGING_BRANCH}" ${LINENO}
-        fi
-        assertok "git checkout -b ${STAGING_BRANCH} ${DEVELOP_BRANCH}" ${LINENO}
-        assertok "git branch --set-upstream-to=${ORIGIN}/${STAGING_BRANCH}" ${LINENO}
+        die "Staging branch does not exist, please run 'git xflow staging reset' first."
     fi
     assertok "git pull" ${LINENO}
     assertok "git merge ${FEATURE_PREFIX}${name}" ${LINENO}
@@ -294,6 +290,37 @@ subcommandaction_hotfix_close() {
 
 
 
+##### 'tag <action>' handlers #####
+
+# Called by: 'git xflow tag list'
+subcommandaction_tag_list() {
+    info "Ordered list of tags as used by git-xflow ..."
+    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
+    end
+}
+
+# Called by: 'git xflow tag review <optional: from>..<optional: to>'
+subcommandaction_tag_review() {
+    local review_from_tag review_to_tag
+    [[ -z "${name}" ]] && subcommandaction_review_do "review" "do" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "review" && echo && die "Argument <from>..<to> is missing or malformed !"
+    review_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    review_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    subcommandaction_review_do "review" "do" "${review_from_tag}${BASH_REMATCH[2]}${review_to_tag}"
+}
+
+# Called by: 'git xflow tag patch <optional: from>..<optional: to>'
+subcommandaction_tag_patch() {
+    local patch_from_tag patch_to_tag
+    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "patch" && echo && die "Argument <from>..<to> is missing or malformed !"
+    patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    subcommandaction_patch_make "patch" "make" "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
+}
+
+
+
 ##### 'master <action>' handlers #####
 
 # Called by: 'git xflow master pull'
@@ -312,40 +339,51 @@ subcommandaction_master_pull() {
 
 
 
+##### 'review <action>' handlers #####
+
+# Called by: 'git xflow review do <from>..<to>'
+subcommandaction_review_do() {
+    local review_to review_from review_mode review_repository review_code_diff review_files_diff review_name template_list template
+    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "review" "do" && echo && die "Argument <from>..<to> is missing or malformed !"
+    review_from="${BASH_REMATCH[1]}";
+    review_to="${BASH_REMATCH[3]}";
+    review_mode="${BASH_REMATCH[2]}";
+    review_repository="$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)"
+    info "Reviewing '${review_repository}' from '${review_from}' to '${review_to}' ..."
+    review_code_diff=`git diff ${review_from}${review_mode}${review_to} --src-prefix=${review_from}: --dst-prefix=${review_to}: \
+        --diff-algorithm=minimal --word-diff=porcelain --find-copies-harder -B -C`
+    review_files_diff=`git diff ${review_from}${review_mode}${review_to} --name-status`
+    review_name="review_${review_repository}_from_$(file_escape "${review_from}")_to_$(file_escape "${review_to}")"
+    empty_flag output || review_name="$(get_flag output)"
+    empty_flag template && template_list="${GITXFLOW_TEMPLATE_REVIEW}" || template_list="$(get_flag template)"
+    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
+    echo "${template_list}" | while read template ; do
+        parse_template review "${template}" "${review_name}" ""
+    done
+    end
+}
+
+
 ##### 'patch <action>' handlers #####
 
-# Called by: 'git xflow patch make <from> <to>'
+# Called by: 'git xflow patch make <from>..<to>'
 subcommandaction_patch_make() {
-    local patch_from patch_to patch_diff patch_name template_list template
-    patch_from="$3"; require_argument "patch_from" "${subcommand}"
-    patch_to="$4"; require_argument "patch_to" "${subcommand}"
+    local patch_from patch_to patch_mode patch_diff patch_name template_list template
+    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "patch" "make" && echo && die "Argument <from>..<to> is missing or malformed !"
+    patch_from="${BASH_REMATCH[1]}";
+    patch_to="${BASH_REMATCH[3]}";
+    patch_mode="${BASH_REMATCH[2]}";
     info "Preparing a patch from '${patch_from}' to '${patch_to}' ..."
-    patch_diff=`git diff --name-status ${patch_from}..${patch_to}`
-    patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_${patch_from}_to_${patch_to}"
+    patch_diff=`git diff --name-status ${patch_from}${patch_mode}${patch_to}`
+    patch_name="patch_$(basename $(git remote -v | grep fetch | cut -f2 | cut -d\  -f1) | cut -d. -f1)_from_$(file_escape "${patch_from}")_to_$(file_escape "${patch_to}")"
     empty_flag output || patch_name="$(get_flag output)"
     trace "${patch_diff}"
     empty_flag template && template_list="${GITXFLOW_TEMPLATE_PATCH}" || template_list="$(get_flag template)"
+    [[ -z "${template_list}" ]] && die "No template selected, please use option '-t <template>' or run 'git xflow init' first."
     echo "${template_list}" | while read template ; do
         parse_template patch "${template}" "${patch_name}" ""
     done
     echo "Type 'git xflow patch apply ${patch_name}' to apply this patch."
-    end
-}
-
-# Called by: 'git xflow patch tags <optional: from> <optional: to>'
-subcommandaction_patch_tags() {
-    local patch_from_tag patch_to_tag
-    [[ -z "$3$4" ]] && subcommandaction_patch_make $1 $2 `git tag | tail -n 2 | head -n 1` `git tag | tail -n 1`
-    [[ -z "$3" || -z "$4" ]] && usage $2 && echo && die "Missing <to> or <from> argument !"
-    patch_from_tag=`git tag | head -n $3 | tail -n 1`
-    patch_to_tag=`git tag | head -n $4 | tail -n 1`
-    subcommandaction_patch_make $1 $2 ${patch_from_tag} ${patch_to_tag}
-}
-
-# Called by: 'git xflow patch showtags'
-subcommandaction_patch_showtags() {
-    info "List of tags as used by 'git xflow patch maketags <to> <from>' ..."
-    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
     end
 }
 
@@ -364,6 +402,7 @@ subcommandaction_patch_apply() {
     [[ -n "${deleted_files}" ]] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" ${LINENO}
     end
 }
+
 
 
 ##### 'version <action>' handlers #####
@@ -388,25 +427,21 @@ subcommandaction_version_check() {
 
 # Called by: 'git xflow version update'
 subcommandaction_version_update() {
-    local official_version version
+    local official_version version last_pwd
     echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... "
     [[ -z "${name}" ]] && version="master"
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/${version}/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    echo -e "v${BROWN}${official_version}${NC}"
-    cp -rf "${GITXFLOW_DIR}/." "${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}" || die "Cannot backup current installation to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
-    trace "Currently installed version backuped to: '${GITXFLOW_DIR}_backup_v${GITXFLOW_VERSION}'."
-    rm -f "${GITXFLOW_DIR}/*" || die "Cannot clean current installation directory: '${GITXFLOW_DIR}'."
-    rm -rf "${GITXFLOW_DIR}/docs" || die "Cannot clean current documentation directory: '${GITXFLOW_DIR}/docs'."
-    rm -rf "${GITXFLOW_DIR}/lib" || die "Cannot clean current libraries directory: '${GITXFLOW_DIR}/lib'."
-    rm -rf "${GITXFLOW_DIR}/update" || die "Cannot clean previous update directory: '${GITXFLOW_DIR}/update'."
-    mkdir "${GITXFLOW_DIR}/update" || die "Cannot create update directory: '${GITXFLOW_DIR}/update'."
-    curl -L -s "https://github.com/golflima/git-xflow/archive/${version}.zip" > "${GITXFLOW_DIR}/update/${version}.zip"
-    unzip -uqq "${GITXFLOW_DIR}/update/${version}.zip" -d "${GITXFLOW_DIR}/update" || die "Cannot extract update package: '${GITXFLOW_DIR}/update/${version}.zip'."
-    cp -rf "${GITXFLOW_DIR}/update/git-xflow-${version}/." "${GITXFLOW_DIR}" || die "Cannot install new scripts to: '${GITXFLOW_DIR}'."
-    install -m 0755 "${GITXFLOW_DIR}/update/git-xflow-${version}/git-xflow" "${GITXFLOW_DIR}" || die "Cannot install new git-flow executable to: '${GITXFLOW_DIR}'."
-    trace "New version installed to: '${GITXFLOW_DIR}'."
-    rm -rf "${GITXFLOW_DIR}/update"
-    end
+    echo -e "v${BROWN}${official_version}${LIGHT_BLUE} ...${NC}"
+    last_pwd="$(pwd)"
+    cd "${GITXFLOW_DIR}"
+    (sleep 1; \
+    assertok "git pull --quiet --all"; \
+    assertok "git checkout --quiet ${version}"; \
+    assertok "git submodule --quiet init"; \
+    assertok "git submodule --quiet update"; \
+    cd "${last_pwd}"; \
+    end) &
+    exit 0;
 }
 
 
@@ -422,14 +457,17 @@ subcommandaction_version_update() {
 main() {
     # Import shFlags functions
     . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
     . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
     gitflow_load_settings
     require_gitflow_initialized
 
     # Import common functions of git-xflow, and load its settings
     . "${GITXFLOW_DIR}/lib/git-xflow/gitxflow-common.sh"
+    if [[ $? > 0 ]]; then echo "Please reinstall git-xflow in '${GITXFLOW_DIR}' from <https://github.com/golflima/git-xflow>."; exit 1; fi
     gitxflow_load_settings
 
     [[ $# = 0 ]] && notice && exit 1;
@@ -442,9 +480,9 @@ main() {
     DEFINE_boolean 'help' false 'Show help' 'h'
 
     # Load command flags for git-xflow
-    DEFINE_string 'subcommand' "$1" 'git xflow <subcommand> <action> <name>' 's'
-    DEFINE_string 'action' "$2" 'git xflow <subcommand> <action> <name>' 'a'
-    DEFINE_string 'name' "$3" 'git xflow <subcommand> <action> <name>' 'n'
+    DEFINE_string 'subcommand' "$([[ "$1" =~ ^- ]] && echo || echo "$1")" 'git xflow <subcommand> <action> <name>' 's'
+    DEFINE_string 'action' "$([[ "$2" =~ ^- ]] && echo || echo "$2")" 'git xflow <subcommand> <action> <name>' 'a'
+    DEFINE_string 'name' "$([[ "$3" =~ ^- ]] && echo || echo "$3")" 'git xflow <subcommand> <action> <name>' 'n'
 
     # Load specific command flags for git-xflow
     DEFINE_string 'template' '' 'Template file to use' 't'
@@ -472,9 +510,9 @@ main() {
         trace "OK"
     fi
 
-    [[ "$(type -t subcommand_${subcommand})" = "function" ]] && subcommand_${subcommand} $*
-    [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${name}" $*
-    [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} $*
+    [[ "$(type -t subcommand_${subcommand})" = "function" ]] && subcommand_${subcommand} "${subcommand}" "${action}" "${name}"
+    [[ "$(type -t action_${action})" = "function" ]] && action_${action} "${subcommand}" "${action}" "${name}"
+    [[ "$(type -t subcommandaction_${subcommand}_${action})" = "function" ]] && subcommandaction_${subcommand}_${action} "${subcommand}" "${action}" "${name}"
 
     if has_flag no_forward; then
         die "Not supported operation. Try 'git xflow help'."

@@ -27,17 +27,20 @@
 #%><%#
 
     This template is used when 'git xflow patch make <from> <to>' is called.
-    It generates a .sh file for UNIX shell to apply the patch (it requires zip and log templates too).
+    It generates a .sh file for UNIX shell to apply the patch (it requires zip template too).
 
-#%>#!/bin/bash
+#%><%@
+    generated_file_suffix="_install.sh"
+%><%# Adds a specific suffix to the name of the generated file #%>#!/bin/bash
 
 
 
 ############## Installer configuration ##############
 
-NAME="<%= patch_name %>" <%# Gets the name of the patch, to retrieve all its related files #%>
-GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>" <%# Gets the version of git-xflow used to generated the patch #%>
-<%@ generated_file_suffix="_install.sh" %> <%# Adds a specific suffix to the name of the generated file #%>
+readonly PATCH_NAME="<%= patch_name %>" <%# Gets the name of the patch, to retrieve all its related files #%>
+readonly PATCH_DIFF="<%= patch_diff %>" <%# Gets the file diff of the patch #%>
+readonly GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>" <%# Gets the version of git-xflow used to generated the patch #%>
+
 
 
 
@@ -83,13 +86,12 @@ assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v$GITXFLOW_VERSION, line
 
 ############## Main ##############
 
-info "Applying patch $name ..."
-[ -f "$name.log" ] || die "File '$name.log' not found"
-[ -f "$name.zip" ] || die "File '$name.zip' not found"
-patch_diff="$(<$name.log)"
-trace "${patch_diff}"
+info "Applying patch ${PATCH_NAME} ..."
+[ -f "${PATCH_NAME}.log" ] || die "File '${PATCH_NAME}.log' not found"
+[ -f "${PATCH_NAME}.zip" ] || die "File '${PATCH_NAME}.zip' not found"
+trace "${PATCH_DIFF}"
 info "Copying new and modified files ..."
-assertok "unzip $name.zip" $LINENO
-deleted_files="$(echo "${patch_diff}" | grep ^D | cut -f2)"
+assertok "unzip ${PATCH_NAME}.zip" $LINENO
+deleted_files="$(echo "${PATCH_DIFF}" | grep ^D | cut -f2)"
 [ -n "${deleted_files}" ] && info "Removing deleted files ..." && assertok "rm -i ${deleted_files}" $LINENO
 end

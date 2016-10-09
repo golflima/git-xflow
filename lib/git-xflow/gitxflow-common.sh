@@ -39,7 +39,8 @@ CYAN=$'\033[0;36m';         LIGHT_CYAN=$'\033[1;36m'
 LIGHT_GRAY=$'\033[0;37m';   WHITE=$'\033[1;37m'
 
 # Fixes for old version of 'sed' (Mac OS X ...)
-TAB=$'\t';                  LF=$'\n' 
+TAB=$'\t';                  LF=$'\n'
+
 
 
 ############## General functions ##############
@@ -72,6 +73,7 @@ require_argument() { [[ -z "$(eval "echo \$$1")" ]] && usage $2 && echo && die "
 # Ends the execution if given command $1 returns an error and displays debug information. Usage: 'assertok "command" $LINENO'
 assertok() { ! $1 && warn "${LIGHT_RED}fatal: git-xflow v${GITXFLOW_VERSION}, line $2, following command failed (err: $?):" && die "$1"; }
 
+# Remove all colors, called when option --no-color (-c) is used
 remove_color() {
     NC=; BLACK=; DARK_GRAY=; RED=; LIGHT_RED=; GREEN=; LIGHT_GREEN=;
     BROWN=; YELLOW=; BLUE=; LIGHT_BLUE=; PURPLE=; LIGHT_PURPLE=;
@@ -96,10 +98,9 @@ gitxflow_load_settings() {
     readonly HOTFIX_PREFIX="$(git config --get gitflow.prefix.hotfix)"
 }
 
+# Checks if git-xflow is correctly initialized for current git repository
 gitxflow_is_initialized() {
-    [[ "${STAGING_BRANCH}" != "" ]] \
-    && [[ "${GITXFLOW_TEMPLATE_REVIEW}" != "" ]] \
-    && [[ "${GITXFLOW_TEMPLATE_PATCH}" != "" ]]
+    [[ "${STAGING_BRANCH}" != "" ]]
 }
 
 # Save default settings that can be overridden using git config
@@ -114,6 +115,21 @@ gitxflow_save_default_settings() {
     assertok "git config --add gitxflow.template.patch templates/patch/cmd"
     assertok "git config --add gitxflow.template.patch templates/patch/tar"
     assertok "git config --add gitxflow.template.patch templates/patch/targz"
+}
+
+# Escape git branch names for use in file names
+file_escape() { echo "${1//[^[:alnum:]._-]/-}"; }
+
+# Call a third-party program to open/execute given file. Usage: 'file_exec <filename>'
+file_exec() {
+    [[ -z "$1" ]] && die "Missing filename."
+    [[ -f "$1" ]] || return 1;
+    [[ "$1" =~ .*\.([[:alnum:]_-]+) ]] || return 2;
+    local file_extension file_application
+    file_extension="${BASH_REMATCH[1]}"
+    file_application="$(git config --get gitxflow.exec.${file_extension})"
+    [[ -z "${file_application}" ]] && return 3;
+    eval "${file_application}" "$1" || trace "Failed to exec file '$1' (error code: '$?') with:\n${file_application} \"$1\""
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
@@ -139,8 +155,13 @@ parse_template() {
         return 1;
     fi
     parsed_template="$(<"${template_file}")"
+    # Handle comment tags: '<%# comment #%>'
+    while [[ "${parsed_template}" =~ (<%#((([^#]|#[^%]|#%[^>]))*)#%>) ]]; do
+        lhs="${BASH_REMATCH[1]}"
+        parsed_template="${parsed_template//"${lhs}"/}"
+    done
     # Handle variable tags: '<%= variablename %>'
-    while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*).*%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%=[[:blank:]]*[[:cntrl:]]*[[:blank:]]*([^%[:blank:][:cntrl:]]*)[[:blank:][:cntrl:]]*%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval echo -n "\"\${$value}\"")"
@@ -151,7 +172,7 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle not echoed command tags: '<%@ command %>'
-    while [[ "${parsed_template}" =~ (<%@([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%@((([^%]|%[^>]))*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         eval "${value}"
@@ -161,13 +182,8 @@ parse_template() {
         fi
         parsed_template="${parsed_template//"${lhs}"/}"
     done
-    # Handle comment tags: '<%# comment #%>'
-    while [[ "${parsed_template}" =~ (<%#([^#]*)#%>) ]]; do
-        lhs="${BASH_REMATCH[1]}"
-        parsed_template="${parsed_template//"${lhs}"/}"
-    done
     # Handle echoed command tags: '<%$ command %>'
-    while [[ "${parsed_template}" =~ (<%\$([^%]*)%>) ]]; do
+    while [[ "${parsed_template}" =~ (<%\$((([^%]|%[^>]))*)%>) ]]; do
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         rhs="$(eval "${value}")"
@@ -178,21 +194,23 @@ parse_template() {
         parsed_template="${parsed_template//"${lhs}"/"${rhs}"}"
     done
     # Handle to-file command tags: '<%: command %>'
-    while [[ "${parsed_template}" =~ (<%:([^%]*)%>) ]]; do
+    if [[ "${parsed_template}" =~ (<%:((([^%]|%[^>]))*)%>) ]]; then
         lhs="${BASH_REMATCH[1]}"
         value="${BASH_REMATCH[2]}"
         eval "${value}" > "${generated_file_name}${generated_file_suffix}"
         if [[ $? = 0 ]]; then
             info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
+            file_exec "${generated_file_name}${generated_file_suffix}"
             return 0;
         else
             warn "Template '${template_name}': error when evaluating to-file command tag: '${lhs}'."
             return 13;
         fi
-    done
+    fi
     if [[ ! -z "${generated_file_name}${generated_file_suffix}" ]]; then
         echo -n "${parsed_template}" > "${generated_file_name}${generated_file_suffix}"
         info "Template '${template_name}': File '${generated_file_name}${generated_file_suffix}' generated."
+        file_exec "${generated_file_name}${generated_file_suffix}"
     else
         info "Template '${template_name}': executed."
     fi

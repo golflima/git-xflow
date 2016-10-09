@@ -27,10 +27,21 @@
 #%><%#
 
     This template is used when 'git xflow patch make <from> <to>' is called.
-    It generates a .tar archive file containing all added and modified files by the patch.
+    It generates a .ps file for Microsoft Windows PowerShell to apply the patch (it requires zip template).
 
-#%><%@
-    generated_file_suffix=".zip"
-%><%:
-    (IFS="`printf '\n\t'`"; git archive --format=zip -9 ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2))
+#%><%@ 
+    generated_file_suffix="_install.ps1"
+%>Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+# Installer configuration
+$patchPath = split-path -parent $MyInvocation.MyCommand.Definition
+$patchZip = "<%= patch_name %>.zip"
+$GITXFLOW_VERSION="<%= GITXFLOW_VERSION %>"
+
+# Unzip new and modified files
+[System.IO.Compression.ZipFile]::ExtractToDirectory($patchZip, $patchPath)
+
+# Delete removed files
+<%$
+    echo "${patch_diff}" | grep ^D | cut -f2 | sed 's/.*/Remove-Item &/g'
 %>

@@ -29,8 +29,8 @@
     This template is used when 'git xflow patch make <from> <to>' is called.
     It generates a .tar archive file containing all added and modified files by the patch.
 
-#%><%@ 
+#%><%@
     generated_file_suffix=".tar"
-%><%: 
-    git archive --format=tar ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2)
+%><%:
+    (IFS="`printf '\n\t'`"; git archive --format=tar ${patch_to} $(echo "${patch_diff}" | grep -v ^D | cut -f2))
 %>
