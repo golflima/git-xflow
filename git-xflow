@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.9.0+160920.2200"
+readonly GITXFLOW_VERSION="0.10.0+161009.2300"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
@@ -431,14 +431,14 @@ subcommandaction_version_update() {
     echo -ne "${LIGHT_BLUE}Upgrading git-xflow from v${BROWN}${GITXFLOW_VERSION}${LIGHT_BLUE} to ... "
     [[ -z "${name}" ]] && version="master"
     official_version=`curl -s "https://raw.githubusercontent.com/golflima/git-xflow/${version}/git-xflow" | grep "^readonly GITXFLOW_VERSION=\"" | awk -F'"' '{print $2}'`
-    echo -e "v${BROWN}${official_version}${NC}"
+    echo -e "v${BROWN}${official_version}${LIGHT_BLUE} ...${NC}"
     last_pwd="$(pwd)"
     cd "${GITXFLOW_DIR}"
     (sleep 1; \
-    assertok "git pull --all"; \
-    assertok "git checkout ${version}"; \
-    assertok "git submodule init"; \
-    assertok "git submodule update"; \
+    assertok "git pull --quiet --all"; \
+    assertok "git checkout --quiet ${version}"; \
+    assertok "git submodule --quiet init"; \
+    assertok "git submodule --quiet update"; \
     cd "${last_pwd}"; \
     end) &
     exit 0;
