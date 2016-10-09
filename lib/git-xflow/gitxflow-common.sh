@@ -129,8 +129,7 @@ file_exec() {
     file_extension="${BASH_REMATCH[1]}"
     file_application="$(git config --get gitxflow.exec.${file_extension})"
     [[ -z "${file_application}" ]] && return 3;
-    [[ -f "${file_application}" ]] || return 4;
-    "${file_application}" "$1"
+    eval "${file_application}" "$1" || trace "Failed to exec file '$1' (error code: '$?') with:\n${file_application} \"$1\""
 }
 
 # Parse and evaluate a given template. Usage: 'parse_template <template_name> <generated_file_name> <generated_file_suffix>'
