@@ -455,11 +455,11 @@ subcommandaction_version_update() {
 
 main() {
     # Import shFlags functions
-    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-shflags"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-common"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
     gitflow_load_settings
     require_gitflow_initialized
