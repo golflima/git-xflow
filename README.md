@@ -49,6 +49,21 @@ you don't have to copy it if you use latest version of git-flow and have put fil
 
 
 
+### Install git-xflow on Debian
+
+1. First, if not already done, install git: `sudo apt-get install git`
+1. `cd /opt`
+1. `sudo git clone https://github.com/golflima/git-xflow.git`
+1. `cd git-xflow`
+1. `sudo git submodule init`
+1. `sudo git submodule update`
+1. `sudo chmod +x git-xflow`
+1. `sudo chmod +x git-flow`
+1. `sudo ln -s /opt/git-xflow/git-xflow /usr/bin/git-xflow`
+1. `sudo ln -s /opt/git-xflow/git-flow /usr/bin/git-flow` (optional)
+
+
+
 Command-line reference
 ----------------------
 
