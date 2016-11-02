@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 # 
 # git-xflow -- An extension to git-flow, which automatize
 # some usual tasks related to repository operations.
