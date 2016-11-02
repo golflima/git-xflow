@@ -437,8 +437,7 @@ subcommandaction_version_update() {
     (sleep 1; \
     assertok "git pull --quiet --all"; \
     assertok "git checkout --quiet ${version}"; \
-    assertok "git submodule --quiet init"; \
-    assertok "git submodule --quiet update"; \
+    assertok "git submodule update --init --recursive --quiet"; \
     cd "${last_pwd}"; \
     end) &
     exit 0;
