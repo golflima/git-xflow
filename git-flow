@@ -49,4 +49,4 @@ fi
 
 # Run gitflow
 if [[ ! -f "${GITXFLOW_DIR}/lib/gitflow/git-flow" ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
-sh "${GITXFLOW_DIR}/lib/gitflow/git-flow $*"
+sh "${GITXFLOW_DIR}/lib/gitflow/git-flow" "$@"
