@@ -53,7 +53,7 @@ subcommand_help() {
 # Called by: 'git xflow init'
 subcommand_init() {
     # Copying custom hooks
-    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/hooks/*" "${DOT_GIT_DIR}/hooks/"
+    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/hooks/*" "${DOT_GIT_DIR}/hooks/" # TODO: Fix for Windows (Cygwin)
     # Checking for previous configuration
     local confirm branch tpl
     if gitxflow_is_initialized; then
@@ -71,10 +71,12 @@ subcommand_init() {
     git config --remove-section gitxflow.template 2>/dev/null
     # Handle default settings
     if has_flag default; then
+        ! gitflow_is_initialized && info "Initializing git flow with default settings first ..." && assertok "git flow init -d" "${LINENO}"
         info "Initializing with default settings ..."
         . "${GITXFLOW_DIR}/gitxflow-init.default.sh"
         end
     fi
+    ! gitflow_is_initialized && info "Initializing git flow first ..." && assertok "git flow init" "${LINENO}"
     # Staging branch configuration
     question "Staging branch [staging]: "
     read branch
@@ -515,8 +517,9 @@ main() {
 
     has_flag help && usage "${subcommand}" "${action}" "${name}" && exit 0;
 
+    [[ "${subcommand}" = "init" ]] && subcommand_init
     gitxflow_is_initialized
-    [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
+    [[ $? = 0 ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
 
     readonly hookname="${DOT_GIT_DIR}/git-xflow/hooks/${subcommand}-${action}"
     if [[ -f "${hookname}" ]]; then
