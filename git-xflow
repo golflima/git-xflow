@@ -53,7 +53,7 @@ subcommand_help() {
 # Called by: 'git xflow init'
 subcommand_init() {
     # Copying custom hooks
-    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/hooks/*" "${HOOKS_DIR}" # TODO: Fix for Windows (Cygwin)
+    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/init/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/init/hooks/*" "${HOOKS_DIR}" # TODO: Fix for Windows (Cygwin)
     # Checking for previous configuration
     local confirm branch tpl
     if gitxflow_is_initialized; then
