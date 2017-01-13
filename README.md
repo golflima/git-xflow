@@ -61,6 +61,10 @@ you don't have to copy it if you use latest version of git-flow and have put fil
 1. `sudo ln -s /opt/git-xflow/git-xflow /usr/bin/git-xflow`
 1. `sudo ln -s /opt/git-xflow/git-flow /usr/bin/git-flow` (optional)
 
+Or, simply run this script:
+
+`curl -sL https://github.com/golflima/git-xflow/blob/master/install/install.sh | sudo bash -`
+
 
 
 Command-line reference
