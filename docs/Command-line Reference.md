@@ -178,6 +178,7 @@ Available ACTIONs are:
 * `show`            : Show version of git-xflow.
 * `check`           : Check for updates of git-xflow.
 * `update`          : Update git-xflow to latest available version.
+* `directory`       : Display installation directory of git-xflow.
 
 
 

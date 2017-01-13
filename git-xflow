@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.10.0+161009.2300"
+readonly GITXFLOW_VERSION="0.11.0+170113.1200"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
@@ -453,6 +453,12 @@ subcommandaction_version_update() {
     exit 0;
 }
 
+# Called by: 'git xflow version directory'
+subcommandaction_version_directory() {
+    info "${GITXFLOW_DIR}"
+    exit 0;
+}
+
 
 
 ############## Main ##############
@@ -496,7 +502,7 @@ main() {
     # Load specific command flags for git-xflow
     DEFINE_string 'template' '' 'Template file to use' 't'
     DEFINE_string 'output' '' 'Output base name' 'o'
-    DEFINE_boolean 'default' '' 'Default behavior' 'd'
+    DEFINE_boolean 'default' false 'Default behavior' 'd'
 
     # parse the command-line
     FLAGS "$@" || die "Cannot parse command-line !"
