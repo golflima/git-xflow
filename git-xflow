@@ -69,11 +69,7 @@ subcommand_init() {
     # Handle default settings
     if has_flag default; then
         info "Initializing with default settings ..."
-        git config --remove-section gitxflow.branch 2>/dev/null
-        git config gitxflow.branch.staging staging
-        git config --path --add gitxflow.template.review less
-        git config --path --add gitxflow.template.patch log
-        git config --path --add gitxflow.template.patch zip
+        . "${GITXFLOW_DIR}/gitxflow-init.default.sh"
         end
     fi
     # Staging branch configuration
