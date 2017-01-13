@@ -17,6 +17,7 @@ Available SUBCOMMANDs are:
 * `master`          : Manage *master* branch.
 * `review`          : Perform reviews.
 * `patch`           : Build and apply patches.
+* `init`            : Initialize git repository for git xflow.
 * `help`            : Show help information.
 * `version`         : Show version information and check for updates.
 
@@ -38,6 +39,7 @@ Available command-specific OPTIONs:
 
 * `-t TEMPLATE` `--template TEMPLATE` : Use TEMPLATE to render command (review, patch).
 * `-o OUTPUT`   `--output OUTPUT`     : Use OUTPUT as basename for generated files (review, patch).
+* `-d`          `--default`           : Use default settings (init).
 
 Type '`git xflow [`SUBCOMMAND`] [`ACTION`] [`NAME`] -h`' for details.
 More information at : https://github.com/golflima/git-xflow
