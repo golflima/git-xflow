@@ -53,7 +53,7 @@ subcommand_help() {
 # Called by: 'git xflow init'
 subcommand_init() {
     # Copying custom hooks
-    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/init/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/init/hooks/*" "${HOOKS_DIR}" # TODO: Fix for Windows (Cygwin)
+    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/init/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/init/hooks"/* "${HOOKS_DIR}/"
     # Checking for previous configuration
     local confirm branch tpl
     if gitxflow_is_initialized; then
@@ -97,6 +97,7 @@ subcommand_init() {
     done
     end
 }
+
 
 
 ##### Global '<subcommand> <action>' handlers #####
@@ -183,6 +184,7 @@ action_patch() {
     [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
     subcommandaction_patch_make "patch" "make" "${branch_from}..${branch_to}"
 }
+
 
 
 ##### 'feature <action>' handlers #####
@@ -373,6 +375,7 @@ subcommandaction_review_do() {
     done
     end
 }
+
 
 
 ##### 'patch <action>' handlers #####
