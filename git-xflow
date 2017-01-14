@@ -161,6 +161,24 @@ action_merged() {
     end
 }
 
+# Called by: 'git xflow <subcommand> mergedtags <optional: name>'
+action_mergedtags() {
+    require_argument "subcommand" "${subcommand}"
+    local branch_name tag commit contained
+    [[ -z "${name}" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Checking tags merged into '${branch_name}' ..."
+    echo 
+    echo -e "Merged\t| Commit hash\t| Commit date\t| Tag name"
+    for tag in `git_tag`; do 
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short tags/${tag} | tail -n 2`
+        set -- $(echo ${commit} | awk -F"|" '{print $1,$2,$3,$4,$5}')
+        contained=`git branch -r --contains $1 | grep ${branch_name}`
+        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  ${tag}${NC}"
+    done | sort -r
+    echo
+    end
+}
+
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "${subcommand}"
@@ -308,27 +326,27 @@ subcommandaction_hotfix_close() {
 # Called by: 'git xflow tag list'
 subcommandaction_tag_list() {
     info "Ordered list of tags as used by git-xflow ..."
-    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
+    echo -e "$(git_tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
     end
 }
 
 # Called by: 'git xflow tag review <optional: from>..<optional: to>'
 subcommandaction_tag_review() {
     local review_from_tag review_to_tag
-    [[ -z "${name}" ]] && subcommandaction_review_do "review" "do" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ -z "${name}" ]] && subcommandaction_review_do "review" "do" `git_tag | tail -n 2 | head -n 1`..`git_tag | tail -n 1`
     [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "review" && echo && die "Argument <from>..<to> is missing or malformed !"
-    review_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
-    review_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    review_from_tag=`git_tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    review_to_tag=`git_tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
     subcommandaction_review_do "review" "do" "${review_from_tag}${BASH_REMATCH[2]}${review_to_tag}"
 }
 
 # Called by: 'git xflow tag patch <optional: from>..<optional: to>'
 subcommandaction_tag_patch() {
     local patch_from_tag patch_to_tag
-    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git_tag | tail -n 2 | head -n 1`..`git_tag | tail -n 1`
     [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "patch" && echo && die "Argument <from>..<to> is missing or malformed !"
-    patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
-    patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    patch_from_tag=`git_tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    patch_to_tag=`git_tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
     subcommandaction_patch_make "patch" "make" "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
 }
 

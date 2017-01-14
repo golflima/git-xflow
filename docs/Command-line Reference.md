@@ -53,6 +53,7 @@ Usage: `git xflow feature ACTION`
 Available ACTIONs are:
 
 * `merged NAME`     : Check branches merged into feature NAME on *origin*.
+* `mergedtags NAME` : Check tags merged into feature NAME on *origin*.
 * `close NAME`      : Finish and push feature NAME to *origin*.
 * `cancel NAME`     : Delete feature NAME from local and *origin*.
 * `log NAME`        : Display commits history of feature NAME from *origin*.
@@ -69,6 +70,7 @@ Available ACTIONs are:
 
 * `merge NAME`      : Merge feature NAME into *staging* branch.
 * `merged`          : Check branches merged into *staging* on *origin*.
+* `mergedtags`      : Check tags merged into *staging* on *origin*.
 * `reset`           : Reset *staging* branch to develop.
 * `reset NAME`      : Reset *staging* branch to feature NAME.
 * `pull`            : Pull *staging* from *origin*.
@@ -85,6 +87,7 @@ Usage: `git xflow develop ACTION`
 Available ACTIONs are:
 
 * `merged`          : Check branches merged into *develop* on *origin*.
+* `mergedtags`      : Check tags merged into *develop* on *origin*.
 * `log`             : Display commits history of *develop* from *origin*.
 * `review`          : Review changes between *develop* and *master*.
 * `patch`           : Build a diff-patch from *master* to *develop*.
@@ -98,6 +101,7 @@ Usage: `git xflow release ACTION`
 Available ACTIONs are:
 
 * `merged NAME`     : Check branches merged into release NAME on *origin*.
+* `mergedtags NAME` : Check tags merged into release NAME on *origin*.
 * `pull NAME`       : Pull release NAME from *origin*.
 * `close NAME`      : Finish and push release NAME to *origin*.
 * `cancel NAME`     : Delete release NAME from local and *origin*.
@@ -114,6 +118,7 @@ Usage: `git xflow hotfix ACTION`
 Available ACTIONs are:
 
 * `merged NAME`     : Check branches merged into hotfix NAME on *origin*.
+* `mergedtags NAME` : Check tags merged into hotfix NAME on *origin*.
 * `publish NAME`    : Publish hotfix NAME to *origin*.
 * `pull NAME`       : Pull hotfix NAME from *origin*.
 * `close NAME`      : Finish and push hotfix NAME to *origin*.
@@ -144,6 +149,7 @@ Usage: `git xflow master ACTION`
 Available ACTIONs are:
 
 * `merged`          : Check branches merged into *master* on *origin*.
+* `mergedtags`      : Check tags merged into *master* on *origin*.
 * `pull`            : Pull *master* from *origin*.
 * `pull NAME`       : Pull tag NAME from *origin*.
 * `log`             : Display commits history of *master* from *origin*.
