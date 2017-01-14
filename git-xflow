@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.10.0+161009.2300"
+readonly GITXFLOW_VERSION="0.11.0+170114.1400"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
@@ -52,6 +52,9 @@ subcommand_help() {
 
 # Called by: 'git xflow init'
 subcommand_init() {
+    # Copying custom hooks
+    [[ "$(ls -1 "${GITXFLOW_DIR}/custom/init/hooks/" | wc -l)" > 0 ]] && cp "${GITXFLOW_DIR}/custom/init/hooks"/* "${HOOKS_DIR}/"
+    # Checking for previous configuration
     local confirm branch tpl
     if gitxflow_is_initialized; then
         info "This repo is already configured for git-xflow, current settings are:"
@@ -66,6 +69,14 @@ subcommand_init() {
     # Cleaning previous settings
     git config --remove-section gitxflow.branch 2>/dev/null
     git config --remove-section gitxflow.template 2>/dev/null
+    # Handle default settings
+    if has_flag default; then
+        ! gitflow_is_initialized && info "Initializing git flow with default settings first ..." && assertok "git flow init -d" "${LINENO}"
+        info "Initializing with default settings ..."
+        . "${GITXFLOW_DIR}/gitxflow-init.default.sh"
+        end
+    fi
+    ! gitflow_is_initialized && info "Initializing git flow first ..." && assertok "git flow init" "${LINENO}"
     # Staging branch configuration
     question "Staging branch [staging]: "
     read branch
@@ -86,6 +97,7 @@ subcommand_init() {
     done
     end
 }
+
 
 
 ##### Global '<subcommand> <action>' handlers #####
@@ -149,6 +161,24 @@ action_merged() {
     end
 }
 
+# Called by: 'git xflow <subcommand> mergedtags <optional: name>'
+action_mergedtags() {
+    require_argument "subcommand" "${subcommand}"
+    local branch_name tag commit contained
+    [[ -z "${name}" ]] && branch_name="${subcommand}" || branch_name="${subcommand}/${name}"
+    info "Checking tags merged into '${branch_name}' ..."
+    echo 
+    echo -e "Merged\t| Commit hash\t| Commit date\t| Tag name"
+    for tag in `git_tag`; do 
+        commit=`git show --format="%H|%h|%ad|%an|%s" --date=short tags/${tag} | tail -n 2`
+        set -- $(echo ${commit} | awk -F"|" '{print $1,$2,$3,$4,$5}')
+        contained=`git branch -r --contains $1 | grep ${branch_name}`
+        echo -e `[ -n "${contained}" ] && echo -e "${GREEN}Yes" || echo -e "${RED}No"` "\t  $2\t  $3\t  ${tag}${NC}"
+    done | sort -r
+    echo
+    end
+}
+
 # Called by: 'git xflow <subcommand> review <optional: name>'
 action_review() {
     require_argument "subcommand" "${subcommand}"
@@ -172,6 +202,7 @@ action_patch() {
     [[ -z "${branch_from}" ]] && die "Branch '${branch_to}' is not supported by git-xflow for patches !"
     subcommandaction_patch_make "patch" "make" "${branch_from}..${branch_to}"
 }
+
 
 
 ##### 'feature <action>' handlers #####
@@ -295,27 +326,27 @@ subcommandaction_hotfix_close() {
 # Called by: 'git xflow tag list'
 subcommandaction_tag_list() {
     info "Ordered list of tags as used by git-xflow ..."
-    echo -e "$(git tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
+    echo -e "$(git_tag | nl | sed 's/^\([[:blank:]]*[0-9]*\)\([[:blank:]]*.*\)$/'"${LIGHT_BLUE}"'\1'"${DARK_GRAY}"'\2'"${NC}"'/g')"
     end
 }
 
 # Called by: 'git xflow tag review <optional: from>..<optional: to>'
 subcommandaction_tag_review() {
     local review_from_tag review_to_tag
-    [[ -z "${name}" ]] && subcommandaction_review_do "review" "do" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ -z "${name}" ]] && subcommandaction_review_do "review" "do" `git_tag | tail -n 2 | head -n 1`..`git_tag | tail -n 1`
     [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "review" && echo && die "Argument <from>..<to> is missing or malformed !"
-    review_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
-    review_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    review_from_tag=`git_tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    review_to_tag=`git_tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
     subcommandaction_review_do "review" "do" "${review_from_tag}${BASH_REMATCH[2]}${review_to_tag}"
 }
 
 # Called by: 'git xflow tag patch <optional: from>..<optional: to>'
 subcommandaction_tag_patch() {
     local patch_from_tag patch_to_tag
-    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git tag | tail -n 2 | head -n 1`..`git tag | tail -n 1`
+    [[ -z "${name}" ]] && subcommandaction_patch_make "patch" "make" `git_tag | tail -n 2 | head -n 1`..`git_tag | tail -n 1`
     [[ ! "${name}" =~ ([[:digit:]]+)(\.{2,3})([[:digit:]]+) ]] && usage "tag" "patch" && echo && die "Argument <from>..<to> is missing or malformed !"
-    patch_from_tag=`git tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
-    patch_to_tag=`git tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
+    patch_from_tag=`git_tag | head -n ${BASH_REMATCH[1]} | tail -n 1`
+    patch_to_tag=`git_tag | head -n ${BASH_REMATCH[3]} | tail -n 1`
     subcommandaction_patch_make "patch" "make" "${patch_from_tag}${BASH_REMATCH[2]}${patch_to_tag}"
 }
 
@@ -362,6 +393,7 @@ subcommandaction_review_do() {
     done
     end
 }
+
 
 
 ##### 'patch <action>' handlers #####
@@ -437,10 +469,15 @@ subcommandaction_version_update() {
     (sleep 1; \
     assertok "git pull --quiet --all"; \
     assertok "git checkout --quiet ${version}"; \
-    assertok "git submodule --quiet init"; \
-    assertok "git submodule --quiet update"; \
+    assertok "git submodule update --init --recursive --quiet"; \
     cd "${last_pwd}"; \
     end) &
+    exit 0;
+}
+
+# Called by: 'git xflow version directory'
+subcommandaction_version_directory() {
+    info "${GITXFLOW_DIR}"
     exit 0;
 }
 
@@ -456,11 +493,11 @@ subcommandaction_version_update() {
 
 main() {
     # Import shFlags functions
-    . "${GITXFLOW_DIR}/lib/shflags/src/shflags"
+    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-shflags"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
-    . "${GITXFLOW_DIR}/lib/gitflow/gitflow-common"
+    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-common"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
     gitflow_load_settings
     require_gitflow_initialized
@@ -487,6 +524,7 @@ main() {
     # Load specific command flags for git-xflow
     DEFINE_string 'template' '' 'Template file to use' 't'
     DEFINE_string 'output' '' 'Output base name' 'o'
+    DEFINE_boolean 'default' false 'Default behavior' 'd'
 
     # parse the command-line
     FLAGS "$@" || die "Cannot parse command-line !"
@@ -500,8 +538,9 @@ main() {
 
     has_flag help && usage "${subcommand}" "${action}" "${name}" && exit 0;
 
+    [[ "${subcommand}" = "init" ]] && subcommand_init
     gitxflow_is_initialized
-    [[ $? = 0 || "${subcommand}" = "init" ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
+    [[ $? = 0 ]] || die "Not a git-xflow-enabled repo yet. Please run 'git xflow init' first."
 
     readonly hookname="${DOT_GIT_DIR}/git-xflow/hooks/${subcommand}-${action}"
     if [[ -f "${hookname}" ]]; then

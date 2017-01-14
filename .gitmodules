@@ -1,6 +1,6 @@
-[submodule "lib/shflags"]
-	path = lib/shflags
-	url = https://github.com/kward/shflags.git
-[submodule "lib/gitflow"]
-	path = lib/gitflow
-	url = https://github.com/nvie/gitflow.git
+[submodule "lib/git-flow-avh"]
+	path = lib/git-flow-avh
+	url = https://github.com/petervanderdoes/gitflow-avh
+[submodule "lib/gl-common.bash"]
+	path = lib/gl-common.bash
+	url = https://github.com/golflima/gl-common.bash

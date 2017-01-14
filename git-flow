@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 # 
 # git-xflow -- An extension to git-flow, which automatize
 # some usual tasks related to repository operations.
@@ -48,5 +48,5 @@ if [[ -f "${GITXFLOW_HOOK}" ]]; then
 fi
 
 # Run gitflow
-if [[ ! -f "${GITXFLOW_DIR}/lib/gitflow/git-flow" ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
-sh "${GITXFLOW_DIR}/lib/gitflow/git-flow $*"
+if [[ ! -f "${GITXFLOW_DIR}/lib/git-flow-avh/git-flow" ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
+sh "${GITXFLOW_DIR}/lib/gitflow/git-flow" "$@"

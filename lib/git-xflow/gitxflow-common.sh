@@ -260,3 +260,13 @@ notice() {
     info "For help, type 'git xflow -h'."
     info "For more information, please visit: <https://github.com/golflima/git-xflow>."
 }
+
+# Reverse lines order
+reverse_lines() {
+    nl | sort -nr | cut -f 2-
+}
+
+# Gets the chronological ordered tags list
+git_tag() {
+    git tag --sort=-taggerdate | reverse_lines
+}
