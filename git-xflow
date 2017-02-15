@@ -375,7 +375,7 @@ subcommandaction_master_pull() {
 # Called by: 'git xflow review do <from>..<to>'
 subcommandaction_review_do() {
     local review_to review_from review_mode review_repository review_code_diff review_files_diff review_name template_list template
-    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "review" "do" && echo && die "Argument <from>..<to> is missing or malformed !"
+    [[ ! "$3" =~ (.+)(\.{3})(.+) ]] && [[ ! "$3" =~ (.+)(\.{2})(.+) ]] && usage "review" "do" && echo && die "Argument <from>..<to> is missing or malformed !"
     review_from="${BASH_REMATCH[1]}";
     review_to="${BASH_REMATCH[3]}";
     review_mode="${BASH_REMATCH[2]}";
@@ -401,7 +401,7 @@ subcommandaction_review_do() {
 # Called by: 'git xflow patch make <from>..<to>'
 subcommandaction_patch_make() {
     local patch_from patch_to patch_mode patch_diff patch_name template_list template
-    [[ ! "$3" =~ (.+)(\.{2,3})(.+) ]] && usage "patch" "make" && echo && die "Argument <from>..<to> is missing or malformed !"
+    [[ ! "$3" =~ (.+)(\.{3})(.+) ]] && [[ ! "$3" =~ (.+)(\.{2})(.+) ]] && usage "patch" "make" && echo && die "Argument <from>..<to> is missing or malformed !"
     patch_from="${BASH_REMATCH[1]}";
     patch_to="${BASH_REMATCH[3]}";
     patch_mode="${BASH_REMATCH[2]}";
