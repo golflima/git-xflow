@@ -53,7 +53,7 @@ you don't have to copy it if you use latest version of git-flow and have put fil
 
 Simply run this script:
 
-`curl -sL https://github.com/golflima/git-xflow/blob/master/install/install.sh | sudo bash -`
+`curl -sL https://raw.githubusercontent.com/golflima/git-xflow/master/install/install.sh | sudo bash -`
 
 
 

@@ -26,7 +26,7 @@
 
 # This script install git-xflow on GNU/Linux
 
-[[ "$(type -t git)" = "function" ]] || apt-get install git
+[[ -n "$(type -t git)" ]] || apt-get install git -y
 cd /opt
 git clone https://github.com/golflima/git-xflow.git
 cd git-xflow

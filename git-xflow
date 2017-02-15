@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.11.0+170114.1400"
+readonly GITXFLOW_VERSION="0.11.1+170215.0900"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
@@ -493,7 +493,7 @@ subcommandaction_version_directory() {
 
 main() {
     # Import shFlags functions
-    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-shflags"
+    . "${GITXFLOW_DIR}/lib/git-flow-avh/gitflow-shFlags"
     if [[ $? > 0 ]]; then echo "Please run 'git submodule init' then 'git submodule update' in '${GITXFLOW_DIR}'."; exit 1; fi
 
     # Import common functions of git-flow, and require git-flow to be initialized
