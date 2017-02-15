@@ -26,7 +26,7 @@
 
 ############## Constants ##############
 
-readonly GITXFLOW_VERSION="0.11.0+170114.1400"
+readonly GITXFLOW_VERSION="0.11.1+170215.0900"
 readonly GITXFLOW_DIR=$(dirname "$(echo "$(readlink -f "$0")" | sed -e 's,\\,/,g')")
 readonly GITXFLOW_ARGS="$@"
 
